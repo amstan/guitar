@@ -40,11 +40,13 @@ int jack_process(jack_nframes_t nframes, void *arg) {
 			fprintf(stderr,"threw away MIDI event - no space reserved at time %d offset %d\n",time,offset);
 		}
 	}
+	
+	return 0;
 }
 
 int jack_init() {
-	//Jack client
-	if((jack_client = jack_client_new (CLIENT_NAME)) == 0) {
+	//connect to jack
+	if((jack_client = jack_client_new ("guitarseq")) == 0) { //TODO: change this
 		fprintf (stderr, "Jack server not running?\n");
 		return 1;
 	}
@@ -52,13 +54,15 @@ int jack_init() {
 	//jack port settings
 	jack_set_process_callback (jack_client, jack_process, 0);
 	output_port = jack_port_register (jack_client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0); //TODO: set proper terminal port output
-	nframes = jack_get_buffer_size(jack_client);
+	//nframes = jack_get_buffer_size(jack_client); //TODO: take this out if not needed
 	
 	//activate
 	if (jack_activate(jack_client)) {
 		fprintf (stderr, "Cannot activate jack client.\n");
 		return 1;
 	}
+	fprintf(stdout,"Jack connection started!\n");
+	
 	
 	//initialize ringbuffer
 	ringbuffer = jack_ringbuffer_create(MAX_EVENT_SIZE*RING_BUFFER_SIZE);
