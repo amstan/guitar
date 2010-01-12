@@ -7,7 +7,7 @@ EXECUTABLE=emulated
 
 all: $(SOURCES) $(EXECUTABLE)
 
-run:
+run: all
 	./$(EXECUTABLE)
 
 clean:

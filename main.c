@@ -14,66 +14,22 @@ written by Alex Stan
 #include <jack/midiport.h>
 #include <jack/ringbuffer.h>
 #include "jack.h"
+#include "args.h"
 
 
 //global
-#define CLIENT_NAME get_arg('C',"guitar-seq")
+#define CLIENT_NAME args_get('C',"guitar-seq")
 #define MAX_EVENT_SIZE 10
 #define RING_BUFFER_SIZE 10
-#define OUTPUT_EVENTS exists_arg('o')
+#define OUTPUT_EVENTS args_exists('o')
 
 #define NOTE_FILE "etc/notes.cfg"
 #define CHORDS_FILE "etc/chords.cfg"
 #define CHORD_MAPPINGS_FILE "etc/chord_mappings.cfg"
-#define TUNING_FILE get_arg('t',"etc/tuning_eadgbe.cfg")
+#define TUNING_FILE args_get('t',"etc/tuning_eadgbe.cfg")
 
-#define CHANNEL exists_arg('c')?string:0
+#define CHANNEL args_exists('c')?string:0
 
-
-//arguments processing
-char arg_name[100];
-char arg_value[100][256];
-int arg_n;
-
-void init_args(int narg, char **args) {
-	int i;
-	arg_n=0;
-	
-	for(i=1;i<narg;i++) {
-		printf("loop",narg);
-		if(args[i][0]=='-') {
-			//it's an option
-			arg_name[arg_n]=args[i][1];
-			arg_n++;
-		}
-		
-		if(args[i][0]!='-') {
-			//it's a string
-			//add it to the previous option
-			strcpy(arg_value[arg_n-1],args[i]);
-		}
-	}
-}
-
-char *get_arg(char name, char *default_value) {
-	int i;
-	
-	for(i=0;i<arg_n;i++)
-		if(arg_name[i]==name)
-			return arg_value[i];
-		
-		return default_value;
-}
-
-int exists_arg(char name) {
-	int i;
-	
-	for(i=0;i<arg_n;i++)
-		if(arg_name[i]==name)
-			return 1;
-		
-		return 0;
-}
 
 //Note definitions
 char notes[127][4];
@@ -239,33 +195,13 @@ char lastnote[6];
 char fretboard[6][19];
 
 //misc functions
-void midinote(int on, char note, char velocity,char channel) {
-	//prepare variables
-	char command = on ? 0x90 : 0x80; command+=channel;
-	char size = 3;
-	jack_nframes_t time = jack_frame_time(jack_client);
-	char data[size];
-	
-	data[0]=command;
-	data[1]=note;
-	data[2]=velocity;
-	
-	//adds a note to the ringbuffer
-	if (jack_ringbuffer_write_space(ringbuffer) >= sizeof(time)+sizeof(size)+size) {
-		jack_ringbuffer_write(ringbuffer, (char *)&time, sizeof(time));
-		jack_ringbuffer_write(ringbuffer, (char *)&size, sizeof(size));
-		jack_ringbuffer_write(ringbuffer, (char *)data, size);
-	} else {
-		fprintf(stderr,"Couldn't write to ringbuffer at %d, %d midi data bytes lost\n", time, size);
-	}
-}
 
 void mute(char string) {
 	//mute string
 	if(lastnote[string]==-1) return;
 	
 	//add note off to midi
-	midinote(0,lastnote[string],0,CHANNEL);
+	jack_midinote(0,lastnote[string],0,CHANNEL);
 	
 	//turn off string
 	lastnote[string]=-1;
@@ -278,7 +214,7 @@ void pluck(char string, char velocity) {
 	if(frets[string]==-1) return; //don't play nonplayable string
 		
 	//add a note on to midi
-	midinote(1,tuning[string]+frets[string],velocity,CHANNEL);
+	jack_midinote(1,tuning[string]+frets[string],velocity,CHANNEL);
 	
 	//remember which note was on
 	lastnote[string]=tuning[string]+frets[string];
@@ -295,7 +231,7 @@ void update_fret(char string) {
 
 //*Main Function*//
 int main(int narg, char **args) {
-	init_args(narg,args);
+	args_init(narg,args);
 	
 	int i,j;
 	
@@ -378,7 +314,7 @@ int main(int narg, char **args) {
 							
 							
 							//add a note on to midi
-							midinote(1,chord[k][s],65,0);
+							jack_midinote(1,chord[k][s],65,0);
 							
 							//remember which note was on
 							lastnote[s]=chord[k][s];

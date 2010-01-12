@@ -76,6 +76,28 @@ int jack_init() {
 	return 0;
 }
 
+
+void jack_midinote(int on, char note, char velocity, char channel) {
+	//prepare variables
+	char command = on ? 0x90 : 0x80; command+=channel;
+	char size = 3;
+	jack_nframes_t time = jack_frame_time(jack_client);
+	char data[size];
+	
+	data[0]=command;
+	data[1]=note;
+	data[2]=velocity;
+	
+	//adds a note to the ringbuffer
+	if (jack_ringbuffer_write_space(ringbuffer) >= sizeof(time)+sizeof(size)+size) {
+		jack_ringbuffer_write(ringbuffer, (char *)&time, sizeof(time));
+		jack_ringbuffer_write(ringbuffer, (char *)&size, sizeof(size));
+		jack_ringbuffer_write(ringbuffer, (char *)data, size);
+	} else {
+		fprintf(stderr,"Couldn't write to ringbuffer at %d, %d midi data bytes lost\n", time, size);
+	}
+}
+
 int jack_stop() {
 	jack_ringbuffer_free(ringbuffer);
 	jack_client_close(jack_client);

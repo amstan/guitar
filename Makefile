@@ -1,16 +1,14 @@
 CC=gcc
-CFLAGS=-c -Wall `pkg-config --cflags jack`
+CFLAGS=-c -std=c99 -Wall `pkg-config --cflags jack`
 LDFLAGS=`pkg-config --libs jack`
-SOURCES=main.c jack.c
+SOURCES=main.c jack.c args.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=guitarseq
 
 all: $(SOURCES) $(EXECUTABLE)
 
-run:
+run: all
 	./$(EXECUTABLE)
-runx:
-	./emulated/emulated|./$(EXECUTABLE)
 
 clean:
 	rm -f ${EXECUTABLE} ${OBJECTS}
@@ -20,3 +18,8 @@ $(EXECUTABLE): $(OBJECTS)
 
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
+
+
+#cool stuff:
+runx: all
+	./emulated/emulated|./$(EXECUTABLE)
