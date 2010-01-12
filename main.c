@@ -10,9 +10,6 @@ written by Alex Stan
 #include <string.h>
 #include <ctype.h>
 
-#include <jack/jack.h>
-#include <jack/midiport.h>
-#include <jack/ringbuffer.h>
 #include "jack.h"
 #include "args.h"
 

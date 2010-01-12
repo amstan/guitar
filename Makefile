@@ -22,4 +22,4 @@ $(EXECUTABLE): $(OBJECTS)
 
 #cool stuff:
 runx: all
-	./emulated/emulated|./$(EXECUTABLE)
+	./emulated/emulated|./$(EXECUTABLE) -o
