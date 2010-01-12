@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-c -std=c99 -Wall `pkg-config --cflags jack`
+CFLAGS=-c -std=c99 `pkg-config --cflags jack`
 LDFLAGS=`pkg-config --libs jack`
 SOURCES=main.c jack.c args.c
 OBJECTS=$(SOURCES:.c=.o)

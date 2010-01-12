@@ -15,6 +15,10 @@ written by Alex Stan
 
 
 //global
+#define NO_STRINGS 6
+#define NO_FRETS 19
+
+
 #define CLIENT_NAME args_get('C',"guitar-seq")
 #define MAX_EVENT_SIZE 10
 #define RING_BUFFER_SIZE 10
@@ -29,15 +33,17 @@ written by Alex Stan
 
 
 //Note definitions
-char notes[127][4];
+#define NO_MIDI_NOTES 128
+#define NOTE_NAME_LEN 4
+char notes[NO_MIDI_NOTES][NOTE_NAME_LEN];
 
 int look_note(char *target_note) {
 	int i=0;
-	while((strcmp(target_note,notes[i++])!=0)&&(i<127));
+	while((strcmp(target_note,notes[i++])!=0)&&(i<=NO_MIDI_NOTES)); //TODO: test if last note works
 	return i-1;
 }
 
-void load_notes(void)
+void load_notes(char *file)
 {
 	FILE *in;
 	int i, n;
@@ -45,7 +51,7 @@ void load_notes(void)
 	
 	fprintf(stdout,"Loading notes... ");
 	
-	in=fopen(NOTE_FILE,"r");
+	in=fopen(file,"r");
 	
 	while(fscanf(in,"%d ",&i)!=-1) {
 		n=0;
@@ -71,7 +77,7 @@ void load_notes(void)
 
 
 //Tuning
-char tuning[6];
+char tuning[NO_STRINGS];
 
 void load_tuning(void)
 {
@@ -187,9 +193,9 @@ void load_chord_mappings(void) {
 
 
 //global variables
-char frets[6];
-char lastnote[6];
-char fretboard[6][19];
+char frets[NO_STRINGS];
+char lastnote[NO_STRINGS];
+char fretboard[NO_STRINGS][NO_FRETS];
 
 //misc functions
 
@@ -234,7 +240,7 @@ int main(int narg, char **args) {
 	
 	fprintf(stdout,"Welcome to the Guitar Sequencer!\n made by Alex Stan\n\n");
 	
-	load_notes();
+	load_notes(NOTE_FILE);
 	load_tuning();
 	load_chords();
 	load_chord_mappings();
