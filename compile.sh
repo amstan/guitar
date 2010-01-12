@@ -1,1 +1,0 @@
- gcc -g `pkg-config --cflags --libs jack` -o guitarseq main.c

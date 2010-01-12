@@ -2,5 +2,8 @@
 AdditionalInfo=3
 ShowPreview=false
 SortOrder=1
-Timestamp=2010,1,4,19,14,45
+Timestamp=2010,1,11,19,53,30
 ViewMode=1
+
+[Settings]
+ShowDotFiles=false
