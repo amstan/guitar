@@ -121,7 +121,7 @@ int main() {
 		}
 		else
 		{
-			if(a[x]!=-1)
+			if((x<100000)&&(a[x]!=-1))
 			{
 				fprintf(stdout,"%cf0%d\n",r,a[x]);
 				fprintf(stdout,"%cf1%d\n",r,a[x]);

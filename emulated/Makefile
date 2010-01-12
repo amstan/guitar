@@ -1,16 +1,14 @@
 CC=gcc
-CFLAGS=-c -Wall `pkg-config --cflags jack`
-LDFLAGS=`pkg-config --libs jack`
-SOURCES=main.c jack.c
+CFLAGS=-c -Wall -I/usr/X11R6/include
+LDFLAGS=-L/usr/X11R6/lib -lX11
+SOURCES=main.c
 OBJECTS=$(SOURCES:.c=.o)
-EXECUTABLE=guitarseq
+EXECUTABLE=emulated
 
 all: $(SOURCES) $(EXECUTABLE)
 
 run:
 	./$(EXECUTABLE)
-runx:
-	./emulated/emulated|./$(EXECUTABLE)
 
 clean:
 	rm -f ${EXECUTABLE} ${OBJECTS}
