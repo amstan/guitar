@@ -78,7 +78,7 @@ int jack_init() {
 }
 
 
-void jack_midinote(int on, char note, char velocity, char channel) {
+int jack_midinote(int on, char note, char velocity, char channel) {
 	//prepare variables
 	char command = on ? 0x90 : 0x80; command+=channel;
 	char size = 3;
@@ -96,7 +96,10 @@ void jack_midinote(int on, char note, char velocity, char channel) {
 		jack_ringbuffer_write(ringbuffer, (char *)data, size);
 	} else {
 		fprintf(stderr,"Couldn't write to ringbuffer at %d, %d midi data bytes lost\n", time, size);
+		return 1;
 	}
+	
+	return 0;
 }
 
 int jack_stop() {

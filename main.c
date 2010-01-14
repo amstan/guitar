@@ -50,7 +50,7 @@ void load_tuning(void)
 		} while((current_note[n-1]!='\n')&&(!feof(in)));
 		current_note[n-1]=0;
 		
-		tuning[i]=look_note(current_note);
+		tuning[i]=notes_look(current_note);
 		
 		
 		fprintf(stdout, "%s ",notes[tuning[i]]);
@@ -96,7 +96,7 @@ void load_chords(void) {
 			else if(isdigit(note[0]))
 				chord[chord_n][i]=atoi(note)+tuning[i];
 			else
-				chord[chord_n][i]=look_note(note);
+				chord[chord_n][i]=notes_look(note);
 		}
 		
 		fscanf(in,"\n");
@@ -193,19 +193,28 @@ int main(int narg, char **args) {
 	
 	fprintf(stdout,"Welcome to the Guitar Sequencer!\n made by Alex Stan\n\n");
 	
-	load_notes(NOTE_FILE);
-	load_tuning();
-	load_chords();
-	load_chord_mappings();
+	int status=0;
+	status += notes_load(NOTE_FILE);
+	load_tuning(); //TODO: add status checking
+	load_chords(); //TODO: add status checking
+	load_chord_mappings(); //TODO: add status checking
 	
-	jack_init();
+	status += jack_init();
+	
+	if(status!=0)
+	{
+		fflush(stdout);
+		fprintf(stderr, "Something went wrong with the initialization! Please check for errors above this line.\n");
+		return 1;
+	}
+	
 	
 	//clear some memory
-	for(i=0;i<6;i++) {
+	for(i=0;i<NO_STRINGS;i++) {
 		lastnote[i]=-1;
 		
 		frets[i]=0;
-		for(j=0;j<19;j++)
+		for(j=0;j<NO_FRETS;j++)
 			fretboard[i][j]=0;
 	}
 	
