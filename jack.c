@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "jack.h"
 
 int jack_process(jack_nframes_t nframes, void *arg) {

@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-c -std=c99 `pkg-config --cflags jack`
 LDFLAGS=`pkg-config --libs jack`
-SOURCES=main.c jack.c args.c
+SOURCES=main.c jack.c args.c notes.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=guitarseq
 

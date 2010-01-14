@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include <jack/jack.h>
 #include <jack/midiport.h>
 #include <jack/ringbuffer.h>

@@ -10,69 +10,22 @@ written by Alex Stan
 #include <string.h>
 #include <ctype.h>
 
+#include "main.h"
 #include "jack.h"
 #include "args.h"
 
+#include "notes.h"
 
-//global
-#define NO_STRINGS 6
-#define NO_FRETS 19
-
-
-#define CLIENT_NAME args_get('C',"guitar-seq")
-#define MAX_EVENT_SIZE 10
-#define RING_BUFFER_SIZE 10
+//#define CLIENT_NAME args_get('C',"guitar-seq")
+//#define MAX_EVENT_SIZE 10
+//#define RING_BUFFER_SIZE 10
 #define OUTPUT_EVENTS args_exists('o')
 
-#define NOTE_FILE "etc/notes.cfg"
 #define CHORDS_FILE "etc/chords.cfg"
 #define CHORD_MAPPINGS_FILE "etc/chord_mappings.cfg"
 #define TUNING_FILE args_get('t',"etc/tuning_eadgbe.cfg")
 
 #define CHANNEL args_exists('c')?string:0
-
-
-//Note definitions
-#define NO_MIDI_NOTES 128
-#define NOTE_NAME_LEN 4
-char notes[NO_MIDI_NOTES][NOTE_NAME_LEN];
-
-int look_note(char *target_note) {
-	int i=0;
-	while((strcmp(target_note,notes[i++])!=0)&&(i<=NO_MIDI_NOTES)); //TODO: test if last note works
-	return i-1;
-}
-
-void load_notes(char *file)
-{
-	FILE *in;
-	int i, n;
-	char current_note[4];
-	
-	fprintf(stdout,"Loading notes... ");
-	
-	in=fopen(file,"r");
-	
-	while(fscanf(in,"%d ",&i)!=-1) {
-		n=0;
-		do {
-			fscanf(in,"%c",&current_note[n]);
-			n++;
-		} while((current_note[n-1]!='\n')&&(!feof(in)));
-		current_note[n-1]=0;
-		
-		strcpy(notes[i],current_note);
-		
-		//printf(stdout,"%d \"%s\"\n",i,notes[i]);
-	}
-	
-	//show 1 note
-	fprintf(stdout,"(\"%s\" - %d) ","G2",look_note("G2"));
-	
-	fprintf(stdout,"(done)\n");
-	
-	fclose(in);
-}
 
 
 
@@ -310,6 +263,7 @@ int main(int narg, char **args) {
 							
 							k=frets[5]-1;
 							k=chord_mappings[5][k];
+							printf("%s\n",chord_name[k]);
 							
 							//TODO find k
 							if(k==-1) break; //don't play non assigned chord
