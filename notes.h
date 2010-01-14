@@ -12,7 +12,8 @@ char notes[NO_MIDI_NOTES][NOTE_NAME_LEN];
 
 /*!Looks for a note by name
  * @param target_note the string to search
- * @return a number x with the condition that notes_look(notes[x])=x
+ * @return the id of the note $name
+           with the condition that notes_look(notes[id])=id
  */
 int notes_look(char *target_note);
 

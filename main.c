@@ -16,6 +16,7 @@ written by Alex Stan
 
 #include "notes.h"
 #include "tuning.h"
+#include "chords.h"
 
 //#define CLIENT_NAME args_get('C',"guitar-seq")
 //#define MAX_EVENT_SIZE 10
@@ -28,88 +29,6 @@ written by Alex Stan
 #define TUNING_FILE args_get('t',"etc/tuning_eadgbe.cfg")
 
 #define CHANNEL args_exists('c')?string:0
-
-//Chords
-char chord_name[100][10];
-char chord[100][6];
-char chord_mappings[6][19];
-int chord_n;
-
-int look_chord(char *name) {
-	int i;
-	if(name[0]=='-') return -1;
-	for(i=0;i<chord_n;i++)
-		if(strcmp(name,chord_name[i])==0) return i;
-	return -1;
-}
-
-void load_chords(void) {
-	FILE *in;
-	int k,i,n;
-	char note[4];
-	
-	fprintf(stdout,"Loading chords... ");
-	
-	in=fopen(CHORDS_FILE,"r");
-	
-	chord_n=0;
-	while(!feof(in)) {
-		fscanf(in,"%[^\t]",chord_name[chord_n]);
-		
-		for(i=0;i<6;i++) {
-			fscanf(in,"%s",note);
-			if((note[0]=='-')||(note[0]=='x')||(note[0]=='X'))
-				chord[chord_n][i]=-1;
-			else if(isdigit(note[0]))
-				chord[chord_n][i]=atoi(note)+tuning[i];
-			else
-				chord[chord_n][i]=notes_look(note);
-		}
-		
-		fscanf(in,"\n");
-		chord_n++;
-	}
-	
-	//output status
-	fprintf(stdout,"(%d chords)",chord_n);
-	fprintf(stdout," (%s:",chord_name[0]);
-	for(i=0;i<6;i++)
-	{
-		if(chord[0][i]!=-1)
-			fprintf(stdout,"%s",notes[chord[0][i]]);
-		else
-			fprintf(stdout,"-");
-		if(i<5) fprintf(stdout," ");
-	}
-	
-	fprintf(stdout,") (done)\n");
-	
-	fclose(in);
-}
-
-void load_chord_mappings(void) {
-	FILE *in;
-	int i,j;
-	char name[10];
-	
-	fprintf(stdout,"Loading chord mappings... ");
-	in=fopen(CHORD_MAPPINGS_FILE,"r");
-	
-	
-	for(i=5;i>=0;i--) {
-		for(j=0;j<19;j++) {
-			fscanf(in,"%s",name);
-			chord_mappings[i][j]=look_chord(name);
-		}
-	}
-	
-	//output status
-	fprintf(stdout," (string 6 fret 6: %s)",chord_name[chord_mappings[5][5]]);
-	
-	fprintf(stdout," (done)\n");
-	
-	fclose(in);
-}
 
 
 //TODO: make this better
@@ -165,9 +84,9 @@ int main(int narg, char **args) {
 	
 	int status=0;
 	status += notes_load(NOTE_FILE);
-	status += load_tuning(TUNING_FILE);
-	load_chords(); //TODO: add status checking
-	load_chord_mappings(); //TODO: add status checking
+	status += tuning_load(TUNING_FILE);
+	status += chords_load(CHORDS_FILE);
+	status += chords_load_mappings(CHORD_MAPPINGS_FILE);
 	
 	status += jack_init();
 	

@@ -10,6 +10,6 @@ char tuning[NO_STRINGS];
  * @param file the file that contains the tuning
  * @return zero on success, non-zero on error
  */
-int load_tuning(char *file);
+int tuning_load(char *file);
 
 #endif

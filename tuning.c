@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "tuning.h"
 
-int load_tuning(char *file) {
+int tuning_load(char *file) {
 	FILE *in;
 	int i, n;
 	char current_note[NOTE_NAME_LEN];
