@@ -15,52 +15,19 @@ written by Alex Stan
 #include "args.h"
 
 #include "notes.h"
+#include "tuning.h"
 
 //#define CLIENT_NAME args_get('C',"guitar-seq")
 //#define MAX_EVENT_SIZE 10
 //#define RING_BUFFER_SIZE 10
 #define OUTPUT_EVENTS args_exists('o')
 
+//TODO: make this nicer
 #define CHORDS_FILE "etc/chords.cfg"
 #define CHORD_MAPPINGS_FILE "etc/chord_mappings.cfg"
 #define TUNING_FILE args_get('t',"etc/tuning_eadgbe.cfg")
 
 #define CHANNEL args_exists('c')?string:0
-
-
-
-//Tuning
-char tuning[NO_STRINGS];
-
-void load_tuning(void)
-{
-	FILE *in;
-	int i, n;
-	char current_note[4];
-	
-	fprintf(stdout,"Loading tuning... (");
-	
-	in=fopen(TUNING_FILE,"r");
-	
-	for(i=0;i<6;i++) {
-		n=0;
-		do {
-			fscanf(in,"%c",&current_note[n]);
-			n++;
-		} while((current_note[n-1]!='\n')&&(!feof(in)));
-		current_note[n-1]=0;
-		
-		tuning[i]=notes_look(current_note);
-		
-		
-		fprintf(stdout, "%s ",notes[tuning[i]]);
-	}
-	
-	fprintf(stdout,") (done)\n");
-	
-	fclose(in);
-}
-
 
 //Chords
 char chord_name[100][10];
@@ -145,13 +112,16 @@ void load_chord_mappings(void) {
 }
 
 
-//global variables
+//TODO: make this better
 char frets[NO_STRINGS];
+
+//!last note that was playing on the string, used to stop it when the next note plays
 char lastnote[NO_STRINGS];
+
+//!fretboard button states, either 1 for pressed or 0 for not pressed
 char fretboard[NO_STRINGS][NO_FRETS];
 
 //misc functions
-
 void mute(char string) {
 	//mute string
 	if(lastnote[string]==-1) return;
@@ -195,7 +165,7 @@ int main(int narg, char **args) {
 	
 	int status=0;
 	status += notes_load(NOTE_FILE);
-	load_tuning(); //TODO: add status checking
+	status += load_tuning(TUNING_FILE);
 	load_chords(); //TODO: add status checking
 	load_chord_mappings(); //TODO: add status checking
 	

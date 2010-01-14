@@ -55,7 +55,6 @@ int jack_init() {
 	//jack port settings
 	jack_set_process_callback (jack_client, jack_process, 0);
 	output_port = jack_port_register (jack_client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0); //TODO: set proper terminal port output
-	//nframes = jack_get_buffer_size(jack_client); //TODO: take this out if not needed
 	
 	//activate
 	if (jack_activate(jack_client)) {
