@@ -5,19 +5,23 @@ SOURCES=main.c jack.c args.c notes.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=guitarseq
 
-all: $(SOURCES) $(EXECUTABLE)
+all: doc $(SOURCES) $(EXECUTABLE)
 
 run: all
 	./$(EXECUTABLE)
 
 clean:
 	rm -f ${EXECUTABLE} ${OBJECTS}
+	rm -R doc/
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
+
+doc: 
+	doxygen
 
 
 #cool stuff:
