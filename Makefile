@@ -1,18 +1,17 @@
 CC=gcc
-CFLAGS=-c -std=c99 `pkg-config --cflags jack`
+CFLAGS=-c -g -std=c99 `pkg-config --cflags jack`
 LDFLAGS=`pkg-config --libs jack`
-SOURCES=main.c jack.c args.c notes.c tuning.c chords.c
+SOURCES=main.c jack.c args.c notes.c tuning.c chords.c config.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=guitarseq
 
-all: doc $(SOURCES) $(EXECUTABLE)
+all: $(SOURCES) $(EXECUTABLE)
 
 run: all
 	./$(EXECUTABLE)
 
 clean:
 	rm -f ${EXECUTABLE} ${OBJECTS}
-	rm -R doc/
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
@@ -20,8 +19,10 @@ $(EXECUTABLE): $(OBJECTS)
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
 
-doc: 
+doc:
 	doxygen
+clean-doc:
+	rm -R doc/
 
 
 #cool stuff:

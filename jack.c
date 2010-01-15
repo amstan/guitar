@@ -45,16 +45,16 @@ int jack_process(jack_nframes_t nframes, void *arg) {
 	return 0;
 }
 
-int jack_init() {
+int jack_init(char *name) {
 	//connect to jack
-	if((jack_client = jack_client_new ("guitarseq")) == 0) { //TODO: change this
+	if((jack_client = jack_client_new (name)) == 0) { //TODO: change this
 		fprintf (stderr, "Jack server not running?\n");
 		return 1;
 	}
 	
 	//jack port settings
 	jack_set_process_callback (jack_client, jack_process, 0);
-	output_port = jack_port_register (jack_client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0); //TODO: set proper terminal port output
+	output_port = jack_port_register (jack_client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsPhysical | JackPortIsTerminal | JackPortIsOutput, 0); //TODO: set proper terminal port output
 	
 	//activate
 	if (jack_activate(jack_client)) {

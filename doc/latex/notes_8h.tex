@@ -1,0 +1,95 @@
+\hypertarget{notes_8h}{
+\section{notes.h File Reference}
+\label{notes_8h}\index{notes.h@{notes.h}}
+}
+\subsection*{Defines}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{notes_8h_abbe12809d5b6cf8a908d39bdbf4896c0}{NO\_\-MIDI\_\-NOTES}~128
+\item 
+\#define \hyperlink{notes_8h_a049d6b4e38112bd8d05bfd2b17481164}{NOTE\_\-NAME\_\-LEN}~4
+\item 
+\#define \hyperlink{notes_8h_a5f6cb40046ab7a5fecf2118f9f7cca1d}{NOTE\_\-FILE}~\char`\"{}etc/notes.cfg\char`\"{}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{notes_8h_a05cd0585389db7bfb2b7ce90f36cc5fe}{notes\_\-look} (char $\ast$target\_\-note)
+\begin{DoxyCompactList}\small\item\em Looks for a note by name. \item\end{DoxyCompactList}\item 
+int \hyperlink{notes_8h_a15271abde190b918ab38c80d5ccee7d9}{notes\_\-load} (char $\ast$file)
+\begin{DoxyCompactList}\small\item\em Loads the notes array from the file. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+char \hyperlink{notes_8h_ae6186875775d374f5b92c20a7f5798cf}{notes} \mbox{[}NO\_\-MIDI\_\-NOTES\mbox{]}\mbox{[}NOTE\_\-NAME\_\-LEN\mbox{]}
+\begin{DoxyCompactList}\small\item\em The notes string array. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Define Documentation}
+\hypertarget{notes_8h_abbe12809d5b6cf8a908d39bdbf4896c0}{
+\index{notes.h@{notes.h}!NO\_\-MIDI\_\-NOTES@{NO\_\-MIDI\_\-NOTES}}
+\index{NO\_\-MIDI\_\-NOTES@{NO\_\-MIDI\_\-NOTES}!notes.h@{notes.h}}
+\subsubsection[{NO\_\-MIDI\_\-NOTES}]{\setlength{\rightskip}{0pt plus 5cm}\#define NO\_\-MIDI\_\-NOTES~128}}
+\label{notes_8h_abbe12809d5b6cf8a908d39bdbf4896c0}
+
+
+Definition at line 4 of file notes.h.\hypertarget{notes_8h_a5f6cb40046ab7a5fecf2118f9f7cca1d}{
+\index{notes.h@{notes.h}!NOTE\_\-FILE@{NOTE\_\-FILE}}
+\index{NOTE\_\-FILE@{NOTE\_\-FILE}!notes.h@{notes.h}}
+\subsubsection[{NOTE\_\-FILE}]{\setlength{\rightskip}{0pt plus 5cm}\#define NOTE\_\-FILE~\char`\"{}etc/notes.cfg\char`\"{}}}
+\label{notes_8h_a5f6cb40046ab7a5fecf2118f9f7cca1d}
+
+
+Definition at line 6 of file notes.h.\hypertarget{notes_8h_a049d6b4e38112bd8d05bfd2b17481164}{
+\index{notes.h@{notes.h}!NOTE\_\-NAME\_\-LEN@{NOTE\_\-NAME\_\-LEN}}
+\index{NOTE\_\-NAME\_\-LEN@{NOTE\_\-NAME\_\-LEN}!notes.h@{notes.h}}
+\subsubsection[{NOTE\_\-NAME\_\-LEN}]{\setlength{\rightskip}{0pt plus 5cm}\#define NOTE\_\-NAME\_\-LEN~4}}
+\label{notes_8h_a049d6b4e38112bd8d05bfd2b17481164}
+
+
+Definition at line 5 of file notes.h.
+
+\subsection{Function Documentation}
+\hypertarget{notes_8h_a15271abde190b918ab38c80d5ccee7d9}{
+\index{notes.h@{notes.h}!notes\_\-load@{notes\_\-load}}
+\index{notes\_\-load@{notes\_\-load}!notes.h@{notes.h}}
+\subsubsection[{notes\_\-load}]{\setlength{\rightskip}{0pt plus 5cm}int notes\_\-load (char $\ast$ {\em file})}}
+\label{notes_8h_a15271abde190b918ab38c80d5ccee7d9}
+
+
+Loads the notes array from the file. 
+\begin{DoxyParams}{Parameters}
+\item[{\em file}]the file that contains the notes to load \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+zero on success, non-\/zero on error 
+\end{DoxyReturn}
+
+
+Definition at line 13 of file notes.c.\hypertarget{notes_8h_a05cd0585389db7bfb2b7ce90f36cc5fe}{
+\index{notes.h@{notes.h}!notes\_\-look@{notes\_\-look}}
+\index{notes\_\-look@{notes\_\-look}!notes.h@{notes.h}}
+\subsubsection[{notes\_\-look}]{\setlength{\rightskip}{0pt plus 5cm}int notes\_\-look (char $\ast$ {\em target\_\-note})}}
+\label{notes_8h_a05cd0585389db7bfb2b7ce90f36cc5fe}
+
+
+Looks for a note by name. 
+\begin{DoxyParams}{Parameters}
+\item[{\em target\_\-note}]the string to search \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the id of the note \$name with the condition that notes\_\-look(notes\mbox{[}id\mbox{]})=id 
+\end{DoxyReturn}
+
+
+Definition at line 7 of file notes.c.
+
+\subsection{Variable Documentation}
+\hypertarget{notes_8h_ae6186875775d374f5b92c20a7f5798cf}{
+\index{notes.h@{notes.h}!notes@{notes}}
+\index{notes@{notes}!notes.h@{notes.h}}
+\subsubsection[{notes}]{\setlength{\rightskip}{0pt plus 5cm}char {\bf notes}\mbox{[}NO\_\-MIDI\_\-NOTES\mbox{]}\mbox{[}NOTE\_\-NAME\_\-LEN\mbox{]}}}
+\label{notes_8h_ae6186875775d374f5b92c20a7f5798cf}
+
+
+The notes string array. Use this to convert from number to note name 
+
+Definition at line 11 of file notes.h.

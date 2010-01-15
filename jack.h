@@ -23,9 +23,10 @@ int jack_process(jack_nframes_t nframes, void *arg);
 
 
 /*! Initializes the jack connection, including the ringbuffer
+ * @param name the name for the jack_init
  * @return zero on success, non-zero on error
  */
-int jack_init();
+int jack_init(char *name);
 
 
 /*! Sends a midi note to jack

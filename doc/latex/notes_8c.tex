@@ -1,0 +1,49 @@
+\hypertarget{notes_8c}{
+\section{notes.c File Reference}
+\label{notes_8c}\index{notes.c@{notes.c}}
+}
+{\ttfamily \#include \char`\"{}notes.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}main.h\char`\"{}}\par
+{\ttfamily \#include $<$stdio.h$>$}\par
+{\ttfamily \#include $<$string.h$>$}\par
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{notes_8c_a05cd0585389db7bfb2b7ce90f36cc5fe}{notes\_\-look} (char $\ast$target\_\-note)
+\begin{DoxyCompactList}\small\item\em Looks for a note by name. \item\end{DoxyCompactList}\item 
+int \hyperlink{notes_8c_a15271abde190b918ab38c80d5ccee7d9}{notes\_\-load} (char $\ast$file)
+\begin{DoxyCompactList}\small\item\em Loads the notes array from the file. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{notes_8c_a15271abde190b918ab38c80d5ccee7d9}{
+\index{notes.c@{notes.c}!notes\_\-load@{notes\_\-load}}
+\index{notes\_\-load@{notes\_\-load}!notes.c@{notes.c}}
+\subsubsection[{notes\_\-load}]{\setlength{\rightskip}{0pt plus 5cm}int notes\_\-load (char $\ast$ {\em file})}}
+\label{notes_8c_a15271abde190b918ab38c80d5ccee7d9}
+
+
+Loads the notes array from the file. 
+\begin{DoxyParams}{Parameters}
+\item[{\em file}]the file that contains the notes to load \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+zero on success, non-\/zero on error 
+\end{DoxyReturn}
+
+
+Definition at line 13 of file notes.c.\hypertarget{notes_8c_a05cd0585389db7bfb2b7ce90f36cc5fe}{
+\index{notes.c@{notes.c}!notes\_\-look@{notes\_\-look}}
+\index{notes\_\-look@{notes\_\-look}!notes.c@{notes.c}}
+\subsubsection[{notes\_\-look}]{\setlength{\rightskip}{0pt plus 5cm}int notes\_\-look (char $\ast$ {\em target\_\-note})}}
+\label{notes_8c_a05cd0585389db7bfb2b7ce90f36cc5fe}
+
+
+Looks for a note by name. 
+\begin{DoxyParams}{Parameters}
+\item[{\em target\_\-note}]the string to search \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the id of the note \$name with the condition that notes\_\-look(notes\mbox{[}id\mbox{]})=id 
+\end{DoxyReturn}
+
+
+Definition at line 7 of file notes.c.

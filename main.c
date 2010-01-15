@@ -13,6 +13,7 @@ written by Alex Stan
 #include "main.h"
 #include "jack.h"
 #include "args.h"
+#include "config.h"
 
 #include "notes.h"
 #include "tuning.h"
@@ -31,8 +32,11 @@ written by Alex Stan
 #define CHANNEL args_exists('c')?string:0
 
 
-//TODO: make this better
-char frets[NO_STRINGS];
+//!the topmost fret on each string
+char last_frets[NO_STRINGS];
+
+//!the topmost fret(used for chords)
+char last_fret;
 
 //!last note that was playing on the string, used to stop it when the next note plays
 char lastnote[NO_STRINGS];
@@ -52,26 +56,35 @@ void mute(char string) {
 	lastnote[string]=-1;
 }
 
-void pluck(char string, char velocity) {
+void pluck(char string, char note, char velocity) {
 	//mute string
 	mute(string);
 	
-	if(frets[string]==-1) return; //don't play nonplayable string
+	//if(frets[string]==-1) return; //don't play nonplayable string TODO: remove this
+	printf("%d %d %d\n", string,note,velocity);
 		
 	//add a note on to midi
-	jack_midinote(1,tuning[string]+frets[string],velocity,CHANNEL);
+	jack_midinote(1,note,velocity,0);
 	
 	//remember which note was on
-	lastnote[string]=tuning[string]+frets[string];
+	lastnote[string]=note;
 }
 
-void update_fret(char string) {
-	//looks on the fretboard and updates the fret
-	int i;
-	frets[string]=0;
-	for(i=0;i<19;i++)
+/*! looks on the fretboard and updates the last fret
+ * @param string the string to look at
+ */
+void frets_update(char string) {
+	char i;
+	
+	last_frets[string]=0;
+	for(i=0;i<NO_FRETS;i++)
 		if(fretboard[string][i])
-			frets[string]=i;
+			last_frets[string]=i;
+	
+	last_fret=0;
+	for(i=0;i<NO_STRINGS;i++)
+		if(last_frets[last_fret]<=last_frets[i])
+			last_fret=i;
 }
 
 //*Main Function*//
@@ -83,12 +96,13 @@ int main(int narg, char **args) {
 	fprintf(stdout,"Welcome to the Guitar Sequencer!\n made by Alex Stan\n\n");
 	
 	int status=0;
-	status += notes_load(NOTE_FILE);
-	status += tuning_load(TUNING_FILE);
-	status += chords_load(CHORDS_FILE);
-	status += chords_load_mappings(CHORD_MAPPINGS_FILE);
+	status += config_init("etc/config");
+	status += notes_load(config_look("notes"));
+	status += tuning_load(config_look("tuning"));
+	status += chords_load(config_look("chords"));
+	status += chords_load_mappings(config_look("chord_mappings"));
 	
-	status += jack_init();
+	status += jack_init(config_look("jack_client"));
 	
 	if(status!=0)
 	{
@@ -102,16 +116,20 @@ int main(int narg, char **args) {
 	for(i=0;i<NO_STRINGS;i++) {
 		lastnote[i]=-1;
 		
-		frets[i]=0;
+		last_frets[i]=0;
 		for(j=0;j<NO_FRETS;j++)
 			fretboard[i][j]=0;
 	}
+	last_fret=0;
 	
 	//main loop
 	//look for key events
-	char command[20];
-	char p, s, f;
+	char command[20]; //one command coming from the guitar
+	char p, //pressed/not
+	     s, //string
+		 f; //fret
 	char mode='n';
+	
 	while(command[0]!='e') {
 		if(fscanf(stdin,"%s",command)!=1)
 			break;
@@ -128,14 +146,18 @@ int main(int narg, char **args) {
 					f+=command[4]-'0';
 				}
 				
-				if((s<0)||(s>5)||(f<0)||(f>19)||(p<0)||(p>1))
+				//validate string
+				if(!((s>=0)&&(s<NO_STRINGS)))
+					continue;
+				
+				if(!((f>=0)&&(f<NO_FRETS)))
 					continue;
 				
 				fretboard[s][f]=p;
 				
-				if(frets[s]<=f) mute(s);
+				if(mode=='n') if(last_frets[s]<=f) mute(s);
 				
-				update_fret(s);
+				frets_update(s);
 				
 				break;
 				
@@ -143,13 +165,15 @@ int main(int narg, char **args) {
 				p=command[0]=='p'?1:0; //released or pressed
 				s=command[2]-'0';
 				
-				if((s<0)||(s>5)||(p<0)||(p>1))
+				//validate string
+				if(!((s>=0)&&(s<NO_STRINGS)))
 					continue;
 				
 				switch(mode) {
 					case 'n':
+						printf("p%d\n",p);
 						if(p)
-							pluck(s,64);
+							pluck(s,last_frets[s]+tuning[s],64);
 // 						else
 // 							mute(s);
 						break;
@@ -157,27 +181,22 @@ int main(int narg, char **args) {
 						if(p) {
 							mute(s);
 							
+							//printf("%d %d %d\n",last_fret,last_frets[last_fret]);
+							
 							char k;
 							
-							k=frets[5]-1;
-							k=chord_mappings[5][k];
+							if(last_frets[last_fret]==-1) break; //don't play when no button is pressed
+							k=chord_mappings[last_fret][last_frets[last_fret]-1];
 							printf("%s\n",chord_name[k]);
 							
-							//TODO find k
 							if(k==-1) break; //don't play non assigned chord
 							if(chord[k][s]==-1) break; //don't play unplayable note
-							
-							
-							//add a note on to midi
-							jack_midinote(1,chord[k][s],65,0);
-							
-							//remember which note was on
-							lastnote[s]=chord[k][s];
+								
+							pluck(s,chord[k][s],64);
 						} else {
 							//mute(s);
 						}
 						break;
-						
 				}
 				
 				break;
@@ -187,6 +206,14 @@ int main(int narg, char **args) {
 				{
 					mode=command[2]=='0'?'n':'c'; //released or pressed
 					printf("mode %c\n",mode);
+				}
+				if(command[2]=='6')
+				{
+					status += config_init("etc/config");
+					status += notes_load(config_look("notes"));
+					status += tuning_load(config_look("tuning"));
+					status += chords_load(config_look("chords"));
+					status += chords_load_mappings(config_look("chord_mappings"));
 				}
 				break;
 				

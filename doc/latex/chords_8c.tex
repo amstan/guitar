@@ -1,0 +1,68 @@
+\hypertarget{chords_8c}{
+\section{chords.c File Reference}
+\label{chords_8c}\index{chords.c@{chords.c}}
+}
+{\ttfamily \#include $<$stdio.h$>$}\par
+{\ttfamily \#include $<$stdlib.h$>$}\par
+{\ttfamily \#include $<$ctype.h$>$}\par
+{\ttfamily \#include $<$string.h$>$}\par
+{\ttfamily \#include \char`\"{}tuning.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}chords.h\char`\"{}}\par
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{chords_8c_a6eb527057e5f9bfcfa7d735fd88915bb}{chords\_\-look} (char $\ast$name)
+\begin{DoxyCompactList}\small\item\em Looks for a chord by name. \item\end{DoxyCompactList}\item 
+int \hyperlink{chords_8c_a9caffde6557768e3d71ee6d263432461}{chords\_\-load} (char $\ast$file)
+\begin{DoxyCompactList}\small\item\em Loads the chords from the file to the chord\_\-name and chord array. \item\end{DoxyCompactList}\item 
+int \hyperlink{chords_8c_a5d6974dcee072352089adf48a4c93875}{chords\_\-load\_\-mappings} (char $\ast$file)
+\begin{DoxyCompactList}\small\item\em Loads the chord mappings from the file to the chord\_\-mappings array. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{chords_8c_a9caffde6557768e3d71ee6d263432461}{
+\index{chords.c@{chords.c}!chords\_\-load@{chords\_\-load}}
+\index{chords\_\-load@{chords\_\-load}!chords.c@{chords.c}}
+\subsubsection[{chords\_\-load}]{\setlength{\rightskip}{0pt plus 5cm}int chords\_\-load (char $\ast$ {\em file})}}
+\label{chords_8c_a9caffde6557768e3d71ee6d263432461}
+
+
+Loads the chords from the file to the chord\_\-name and chord array. 
+\begin{DoxyParams}{Parameters}
+\item[{\em file}]file to load the chords from \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+zero on success, non-\/zero on error 
+\end{DoxyReturn}
+
+
+Definition at line 16 of file chords.c.\hypertarget{chords_8c_a5d6974dcee072352089adf48a4c93875}{
+\index{chords.c@{chords.c}!chords\_\-load\_\-mappings@{chords\_\-load\_\-mappings}}
+\index{chords\_\-load\_\-mappings@{chords\_\-load\_\-mappings}!chords.c@{chords.c}}
+\subsubsection[{chords\_\-load\_\-mappings}]{\setlength{\rightskip}{0pt plus 5cm}int chords\_\-load\_\-mappings (char $\ast$ {\em file})}}
+\label{chords_8c_a5d6974dcee072352089adf48a4c93875}
+
+
+Loads the chord mappings from the file to the chord\_\-mappings array. 
+\begin{DoxyParams}{Parameters}
+\item[{\em file}]file to load the chord mappings from \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+zero on success, non-\/zero on error 
+\end{DoxyReturn}
+
+
+Definition at line 66 of file chords.c.\hypertarget{chords_8c_a6eb527057e5f9bfcfa7d735fd88915bb}{
+\index{chords.c@{chords.c}!chords\_\-look@{chords\_\-look}}
+\index{chords\_\-look@{chords\_\-look}!chords.c@{chords.c}}
+\subsubsection[{chords\_\-look}]{\setlength{\rightskip}{0pt plus 5cm}int chords\_\-look (char $\ast$ {\em name})}}
+\label{chords_8c_a6eb527057e5f9bfcfa7d735fd88915bb}
+
+
+Looks for a chord by name. 
+\begin{DoxyParams}{Parameters}
+\item[{\em name}]chord name to search \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the id of the chord in the chord\_\-name array, such that chord\_\-look(chord\_\-name\mbox{[}x\mbox{]})=x returns -\/1 if chord was not found 
+\end{DoxyReturn}
+
+
+Definition at line 8 of file chords.c.

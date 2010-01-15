@@ -1,0 +1,10 @@
+#general
+jack_client = alex!
+channel = 0
+velocity = 64
+
+#files
+notes = etc/notes.cfg
+tuning = etc/tuning_eadgbe.cfg
+chords = etc/chords.cfg
+chord_mappings = etc/hotel_california.cfg

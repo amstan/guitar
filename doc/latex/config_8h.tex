@@ -1,0 +1,84 @@
+\hypertarget{config_8h}{
+\section{config.h File Reference}
+\label{config_8h}\index{config.h@{config.h}}
+}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{config_8h_a5a547d5334033ace8e16b19da02d36f8}{config\_\-init} (char $\ast$file)
+\begin{DoxyCompactList}\small\item\em Initializes the configuration(reads the file). \item\end{DoxyCompactList}\item 
+char $\ast$ \hyperlink{config_8h_a151e85e326935501eca72dad7750964e}{config\_\-look} (char $\ast$name)
+\begin{DoxyCompactList}\small\item\em Search the configuration for a key. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+char \hyperlink{config_8h_aff84ae41aaf73cc0490ce424a8e91e4f}{config\_\-name} \mbox{[}100\mbox{]}\mbox{[}256\mbox{]}
+\begin{DoxyCompactList}\small\item\em configuration names \item\end{DoxyCompactList}\item 
+char \hyperlink{config_8h_aedaac6dbaad208d2941b3d0ff7e86812}{config\_\-value} \mbox{[}100\mbox{]}\mbox{[}1024\mbox{]}
+\begin{DoxyCompactList}\small\item\em configuration values \item\end{DoxyCompactList}\item 
+int \hyperlink{config_8h_af41bf260814f822bafd70cf95a570cce}{config\_\-n}
+\begin{DoxyCompactList}\small\item\em number of configuration entries \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{config_8h_a5a547d5334033ace8e16b19da02d36f8}{
+\index{config.h@{config.h}!config\_\-init@{config\_\-init}}
+\index{config\_\-init@{config\_\-init}!config.h@{config.h}}
+\subsubsection[{config\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}int config\_\-init (char $\ast$ {\em file})}}
+\label{config_8h_a5a547d5334033ace8e16b19da02d36f8}
+
+
+Initializes the configuration(reads the file). 
+\begin{DoxyParams}{Parameters}
+\item[{\em file}]file to read the conf from \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+zero on success, non-\/zero on error 
+\end{DoxyReturn}
+
+
+Definition at line 5 of file config.c.\hypertarget{config_8h_a151e85e326935501eca72dad7750964e}{
+\index{config.h@{config.h}!config\_\-look@{config\_\-look}}
+\index{config\_\-look@{config\_\-look}!config.h@{config.h}}
+\subsubsection[{config\_\-look}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ config\_\-look (char $\ast$ {\em name})}}
+\label{config_8h_a151e85e326935501eca72dad7750964e}
+
+
+Search the configuration for a key. 
+\begin{DoxyParams}{Parameters}
+\item[{\em name}]name of the configuration key \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the value of the configuration 
+\end{DoxyReturn}
+
+
+Definition at line 29 of file config.c.
+
+\subsection{Variable Documentation}
+\hypertarget{config_8h_af41bf260814f822bafd70cf95a570cce}{
+\index{config.h@{config.h}!config\_\-n@{config\_\-n}}
+\index{config\_\-n@{config\_\-n}!config.h@{config.h}}
+\subsubsection[{config\_\-n}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf config\_\-n}}}
+\label{config_8h_af41bf260814f822bafd70cf95a570cce}
+
+
+number of configuration entries 
+
+Definition at line 11 of file config.h.\hypertarget{config_8h_aff84ae41aaf73cc0490ce424a8e91e4f}{
+\index{config.h@{config.h}!config\_\-name@{config\_\-name}}
+\index{config\_\-name@{config\_\-name}!config.h@{config.h}}
+\subsubsection[{config\_\-name}]{\setlength{\rightskip}{0pt plus 5cm}char {\bf config\_\-name}\mbox{[}100\mbox{]}\mbox{[}256\mbox{]}}}
+\label{config_8h_aff84ae41aaf73cc0490ce424a8e91e4f}
+
+
+configuration names 
+
+Definition at line 5 of file config.h.\hypertarget{config_8h_aedaac6dbaad208d2941b3d0ff7e86812}{
+\index{config.h@{config.h}!config\_\-value@{config\_\-value}}
+\index{config\_\-value@{config\_\-value}!config.h@{config.h}}
+\subsubsection[{config\_\-value}]{\setlength{\rightskip}{0pt plus 5cm}char {\bf config\_\-value}\mbox{[}100\mbox{]}\mbox{[}1024\mbox{]}}}
+\label{config_8h_aedaac6dbaad208d2941b3d0ff7e86812}
+
+
+configuration values 
+
+Definition at line 8 of file config.h.

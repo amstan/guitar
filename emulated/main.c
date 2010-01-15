@@ -119,6 +119,10 @@ int main() {
 		{
 			fprintf(stdout,"%cb1\n",r);
 		}
+		else if(x==65299) //reload
+		{
+			fprintf(stdout,"%cb6\n",r);
+		}
 		else
 		{
 			if((x<100000)&&(a[x]!=-1))
