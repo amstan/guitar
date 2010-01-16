@@ -66,7 +66,7 @@ int chords_load(char *file) {
 int chords_load_mappings(char *file) {
 	FILE *in;
 	int i,j;
-	char name[CHORD_NAME_LEN];
+	char name[CHORD_NAME_LEN], space[CHORD_NAME_LEN];
 	
 	fprintf(stdout,"Loading chord mappings... ");
 	
@@ -77,11 +77,21 @@ int chords_load_mappings(char *file) {
 		return 1;
 	}
 	
-	for(i=NO_STRINGS-1;i>=0;i--) {
-		for(j=0;j<NO_FRETS;j++) {
-			fscanf(in,"%s",name);
+	//clean what was in there before
+	for(i=0;i<NO_STRINGS;i++)
+		for(j=0;j<NO_FRETS;j++)
+			chord_mappings[i][j]=-1;
+	
+	fscanf(in,"%*[^\n]s"); //skip the first line with the fret #s
+	
+	for(i=NO_STRINGS-1;i>0;i--) {
+		j=0;
+		do {
+		//for(j=0;j<NO_FRETS;j++) {
+			fscanf(in,"%s%*[\t ]s",name);
 			chord_mappings[i][j]=chords_look(name);
-		}
+			j++;
+		} while(fscanf(in,"%[\n\r\t ]s",space)==0);
 	}
 	
 	//output status
