@@ -59,6 +59,10 @@ int chords_load(char *file) {
 	
 	fprintf(stdout,") (done)\n");
 	
+	fclose(in);
+	return 0;
+	
+	//for debug
 	for(i=0;i<chord_n;i++)
 	{
 		printf("%s",chord_name[i]);
@@ -66,9 +70,6 @@ int chords_load(char *file) {
 			printf(" %d",chord[i][k]);
 		printf("\n");
 	}
-	
-	fclose(in);
-	return 0;
 }
 
 int chords_load_mappings(char *file) {
@@ -95,7 +96,6 @@ int chords_load_mappings(char *file) {
 	for(i=NO_STRINGS-1;i>0;i--) {
 		j=0;
 		do {
-		//for(j=0;j<NO_FRETS;j++) {
 			fscanf(in,"%s%*[\t ]s",name);
 			chord_mappings[i][j]=chords_look(name);
 			j++;
