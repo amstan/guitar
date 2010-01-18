@@ -95,7 +95,7 @@ int init()
 	fprintf(stdout,"Welcome to the Guitar Sequencer!\n made by Alex Stan\n\n");
 	
 	int status=0;
-	status += config_init("etc/config");
+	status += config_init("etc/config.ini");
 	status += notes_load(config_look("notes"));
 	status += tuning_load(config_look("tuning"));
 	status += chords_load(config_look("chords"));
