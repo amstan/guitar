@@ -48,9 +48,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p><a href="chords_8h_source.html">Go to the source code of this file.</a></p>
 <table border="0" cellpadding="0" cellspacing="0">
 <tr><td colspan="2"><h2>Defines</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="chords_8h.html#a44285dbcfa8e26ec2a2a8f997bdc7752">CHORD_NAME_LEN</a>&nbsp;&nbsp;&nbsp;10</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="chords_8h.html#a44285dbcfa8e26ec2a2a8f997bdc7752">CHORD_NAME_LEN</a>&nbsp;&nbsp;&nbsp;20</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">the maximum length of a chord name  <a href="#a44285dbcfa8e26ec2a2a8f997bdc7752"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="chords_8h.html#abaf33aa34e47e8b303381f86053eca92">MAX_CHORDS</a>&nbsp;&nbsp;&nbsp;100</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="chords_8h.html#abaf33aa34e47e8b303381f86053eca92">MAX_CHORDS</a>&nbsp;&nbsp;&nbsp;1000</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">the maximum number of chords  <a href="#abaf33aa34e47e8b303381f86053eca92"></a><br/></td></tr>
 <tr><td colspan="2"><h2>Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="chords_8h.html#a6eb527057e5f9bfcfa7d735fd88915bb">chords_look</a> (char *name)</td></tr>
@@ -66,8 +66,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">chord array which contains the individual notes for the chord  <a href="#ae456eca69f356740bc4bd705c696b899"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="chords_8h.html#af2a4675e92daf42e6d76e90e73b7ad0f">chord_n</a></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">number of chords  <a href="#af2a4675e92daf42e6d76e90e73b7ad0f"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="chords_8h.html#a0dc9e2248aeac466041821af2f7ae898">chord_mappings</a> [NO_STRINGS][NO_FRETS]</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">chord mappings for each fret  <a href="#a0dc9e2248aeac466041821af2f7ae898"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="chords_8h.html#aab5e2a8a89bc330e5d0c885427e49db3">chord_mappings</a> [NO_STRINGS][NO_FRETS]</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">chord mappings for each fret  <a href="#aab5e2a8a89bc330e5d0c885427e49db3"></a><br/></td></tr>
 </table>
 <hr/><h2>Define Documentation</h2>
 <a class="anchor" id="a44285dbcfa8e26ec2a2a8f997bdc7752"></a><!-- doxytag: member="chords.h::CHORD_NAME_LEN" ref="a44285dbcfa8e26ec2a2a8f997bdc7752" args="" -->
@@ -75,7 +75,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define CHORD_NAME_LEN&nbsp;&nbsp;&nbsp;10</td>
+          <td class="memname">#define CHORD_NAME_LEN&nbsp;&nbsp;&nbsp;20</td>
         </tr>
       </table>
 </div>
@@ -92,7 +92,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MAX_CHORDS&nbsp;&nbsp;&nbsp;100</td>
+          <td class="memname">#define MAX_CHORDS&nbsp;&nbsp;&nbsp;1000</td>
         </tr>
       </table>
 </div>
@@ -159,7 +159,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>zero on success, non-zero on error </dd></dl>
 
-<p>Definition at line <a class="el" href="chords_8c_source.html#l00066">66</a> of file <a class="el" href="chords_8c_source.html">chords.c</a>.</p>
+<p>Definition at line <a class="el" href="chords_8c_source.html#l00074">74</a> of file <a class="el" href="chords_8c_source.html">chords.c</a>.</p>
 
 </div>
 </div>
@@ -210,12 +210,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 </div>
 </div>
-<a class="anchor" id="a0dc9e2248aeac466041821af2f7ae898"></a><!-- doxytag: member="chords.h::chord_mappings" ref="a0dc9e2248aeac466041821af2f7ae898" args="[NO_STRINGS][NO_FRETS]" -->
+<a class="anchor" id="aab5e2a8a89bc330e5d0c885427e49db3"></a><!-- doxytag: member="chords.h::chord_mappings" ref="aab5e2a8a89bc330e5d0c885427e49db3" args="[NO_STRINGS][NO_FRETS]" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char <a class="el" href="chords_8h.html#a0dc9e2248aeac466041821af2f7ae898">chord_mappings</a>[NO_STRINGS][NO_FRETS]</td>
+          <td class="memname">int <a class="el" href="chords_8h.html#aab5e2a8a89bc330e5d0c885427e49db3">chord_mappings</a>[NO_STRINGS][NO_FRETS]</td>
         </tr>
       </table>
 </div>
@@ -276,7 +276,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on Fri Jan 15 15:00:30 2010 for guitarseq by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on Mon Jan 18 14:36:23 2010 for guitarseq by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

@@ -68,6 +68,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a4ac4dbdea142037384af03aa7d0dc992">pluck</a> (char string, char note, char velocity)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a3dd8b91234b8f7e5d1ec33f842b3809e">frets_update</a> (char string)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">looks on the fretboard and updates the last fret  <a href="#a3dd8b91234b8f7e5d1ec33f842b3809e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a05848de25ac2dbec233935058a1d24b4">init</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a8bc81d4e8cd0819680a03b135b7d6c4b">main</a> (int narg, char **args)</td></tr>
 <tr><td colspan="2"><h2>Variables</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a29ea184fd85262111dee00f3cb76437e">last_frets</a> [NO_STRINGS]</td></tr>
@@ -78,6 +79,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">last note that was playing on the string, used to stop it when the next note plays  <a href="#ac3a751d6f14e6d43ccc7205b310188bb"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#aaad95033705517622f5ca0ed8708bfaa">fretboard</a> [NO_STRINGS][NO_FRETS]</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">fretboard button states, either 1 for pressed or 0 for not pressed  <a href="#aaad95033705517622f5ca0ed8708bfaa"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a81c2defc4a84e6388c26f9545f74f643">transpose</a></td></tr>
 </table>
 <hr/><h2>Define Documentation</h2>
 <a class="anchor" id="ace6a11e892466500d47d1f45f042bc53"></a><!-- doxytag: member="main.c::CHANNEL" ref="ace6a11e892466500d47d1f45f042bc53" args="" -->
@@ -180,7 +182,26 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="main_8c_source.html#l00076">76</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+<p>Definition at line <a class="el" href="main_8c_source.html#l00079">79</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a05848de25ac2dbec233935058a1d24b4"></a><!-- doxytag: member="main.c::init" ref="a05848de25ac2dbec233935058a1d24b4" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int init </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Definition at line <a class="el" href="main_8c_source.html#l00093">93</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
 
 </div>
 </div>
@@ -209,7 +230,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="memdoc">
 
-<p>Definition at line <a class="el" href="main_8c_source.html#l00091">91</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+<p>Definition at line <a class="el" href="main_8c_source.html#l00121">121</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
 
 </div>
 </div>
@@ -229,7 +250,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="memdoc">
 
-<p>Definition at line <a class="el" href="main_8c_source.html#l00048">48</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+<p>Definition at line <a class="el" href="main_8c_source.html#l00052">52</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
 
 </div>
 </div>
@@ -264,7 +285,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="memdoc">
 
-<p>Definition at line <a class="el" href="main_8c_source.html#l00059">59</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+<p>Definition at line <a class="el" href="main_8c_source.html#l00063">63</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
 
 </div>
 </div>
@@ -337,6 +358,22 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 </div>
 </div>
+<a class="anchor" id="a81c2defc4a84e6388c26f9545f74f643"></a><!-- doxytag: member="main.c::transpose" ref="a81c2defc4a84e6388c26f9545f74f643" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="main_8c.html#a81c2defc4a84e6388c26f9545f74f643">transpose</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>This is the number to transpose by. Negative numbers makes stuff go flat, positive sharp and 0 stays the same. </p>
+
+<p>Definition at line <a class="el" href="main_8c_source.html#l00049">49</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
 </div>
 <!--- window showing the filter options -->
 <div id="MSearchSelectWindow"
@@ -352,7 +389,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on Fri Jan 15 15:00:30 2010 for guitarseq by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on Mon Jan 18 14:36:23 2010 for guitarseq by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

@@ -43,6 +43,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="contents">
 <h1>jack.c File Reference</h1><code>#include &lt;stdio.h&gt;</code><br/>
+<code>#include &lt;sys/errno.h&gt;</code><br/>
 <code>#include &quot;<a class="el" href="jack_8h_source.html">jack.h</a>&quot;</code><br/>
 
 <p><a href="jack_8c_source.html">Go to the source code of this file.</a></p>
@@ -50,15 +51,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td colspan="2"><h2>Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="jack_8c.html#a43ac2d1953e13faa44798c7ae9adb370">jack_process</a> (jack_nframes_t nframes, void *arg)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">The process function that jack executes in another thread for sending the data.  <a href="#a43ac2d1953e13faa44798c7ae9adb370"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="jack_8c.html#a7939448eb0944163b3b3b753f66260a8">jack_init</a> (char *name)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Initializes the jack connection, including the ringbuffer.  <a href="#a7939448eb0944163b3b3b753f66260a8"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="jack_8c.html#a6253b724a336a171785132d53e79e1b3">jack_init</a> (char *name, char *connect_output)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Initializes the jack connection, including the ringbuffer.  <a href="#a6253b724a336a171785132d53e79e1b3"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="jack_8c.html#ad6f43883062cebf73820ebbc753bef82">jack_midinote</a> (int on, char note, char velocity, char channel)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Sends a midi note to jack.  <a href="#ad6f43883062cebf73820ebbc753bef82"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="jack_8c.html#a9e71f0c6d6abe0ad405526189258ee5f">jack_stop</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Stop Jack.  <a href="#a9e71f0c6d6abe0ad405526189258ee5f"></a><br/></td></tr>
 </table>
 <hr/><h2>Function Documentation</h2>
-<a class="anchor" id="a7939448eb0944163b3b3b753f66260a8"></a><!-- doxytag: member="jack.c::jack_init" ref="a7939448eb0944163b3b3b753f66260a8" args="(char *name)" -->
+<a class="anchor" id="a6253b724a336a171785132d53e79e1b3"></a><!-- doxytag: member="jack.c::jack_init" ref="a6253b724a336a171785132d53e79e1b3" args="(char *name, char *connect_output)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -66,9 +67,18 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
           <td class="memname">int jack_init </td>
           <td>(</td>
           <td class="paramtype">char *&nbsp;</td>
-          <td class="paramname"> <em>name</em></td>
-          <td>&nbsp;)&nbsp;</td>
+          <td class="paramname"> <em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">char *&nbsp;</td>
+          <td class="paramname"> <em>connect_output</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
         </tr>
       </table>
 </div>
@@ -78,12 +88,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>name</em>&nbsp;</td><td>the name for the jack_init </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>connect_output</em>&nbsp;</td><td>a regex to find a port to connect the output to. ex: jack_keyboard to connect to jack keyboard </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>zero on success, non-zero on error </dd></dl>
 
-<p>Definition at line <a class="el" href="jack_8c_source.html#l00048">48</a> of file <a class="el" href="jack_8c_source.html">jack.c</a>.</p>
+<p>Definition at line <a class="el" href="jack_8c_source.html#l00049">49</a> of file <a class="el" href="jack_8c_source.html">jack.c</a>.</p>
 
 </div>
 </div>
@@ -136,7 +147,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>zero on success, non-zero on error </dd></dl>
 
-<p>Definition at line <a class="el" href="jack_8c_source.html#l00080">80</a> of file <a class="el" href="jack_8c_source.html">jack.c</a>.</p>
+<p>Definition at line <a class="el" href="jack_8c_source.html#l00102">102</a> of file <a class="el" href="jack_8c_source.html">jack.c</a>.</p>
 
 </div>
 </div>
@@ -174,7 +185,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>zero on success, non-zero on error </dd></dl>
 
-<p>Definition at line <a class="el" href="jack_8c_source.html#l00004">4</a> of file <a class="el" href="jack_8c_source.html">jack.c</a>.</p>
+<p>Definition at line <a class="el" href="jack_8c_source.html#l00005">5</a> of file <a class="el" href="jack_8c_source.html">jack.c</a>.</p>
 
 </div>
 </div>
@@ -196,7 +207,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Stop Jack. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>zero on success, non-zero on erro </dd></dl>
 
-<p>Definition at line <a class="el" href="jack_8c_source.html#l00104">104</a> of file <a class="el" href="jack_8c_source.html">jack.c</a>.</p>
+<p>Definition at line <a class="el" href="jack_8c_source.html#l00126">126</a> of file <a class="el" href="jack_8c_source.html">jack.c</a>.</p>
 
 </div>
 </div>
@@ -215,7 +226,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on Fri Jan 15 15:00:30 2010 for guitarseq by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on Mon Jan 18 14:36:23 2010 for guitarseq by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

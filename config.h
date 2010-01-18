@@ -1,6 +1,13 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+/*! @file config.h
+ * Configuration file processing library.
+ * This library is meant to be short and simple for parsing ini style files.
+ * The files should consist of "key = value" pairs, though "key value" and "key : value" pairs, as long as the key has a whitespace after
+ * Lines starting with '#' are ignored
+ */
+
 //!configuration names
 char config_name[100][256];
 

@@ -5,10 +5,10 @@
 
 
 //! the maximum length of a chord name
-#define CHORD_NAME_LEN 10
+#define CHORD_NAME_LEN 20
 
 //! the maximum number of chords
-#define MAX_CHORDS 100
+#define MAX_CHORDS 1000
 
 
 //! chord names array
@@ -21,7 +21,7 @@ char chord[MAX_CHORDS][NO_STRINGS];
 int chord_n;
 
 //! chord mappings for each fret
-char chord_mappings[NO_STRINGS][NO_FRETS];
+int chord_mappings[NO_STRINGS][NO_FRETS];
 
 
 /*! Looks for a chord by name

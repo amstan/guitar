@@ -6,11 +6,11 @@
  * This library is meant to be a short, fast and powerful way to handle command line arguments
  * @par Examples
  *   Examples of usage and how it will be stored in memory
- * @arg -f                        =>  {('f',"")}
- * @arg -f something              =>  {('f',"something")}
- * @arg -f something ignore       =>  {('f',"something")}
- * @arg -f -a something           =>  {('f',""),('a',"something")}
- * @arg -a previous -a something  =>  {('a',"something")}
+ * - -f                        =>  {('f',"")}
+ * - -f something              =>  {('f',"something")}
+ * - -f something ignore       =>  {('f',"something")}
+ * - -f -a something           =>  {('f',""),('a',"something")}
+ * - -a previous -a something  =>  {('a',"something")}
  */
 
 static char arg_name[100];

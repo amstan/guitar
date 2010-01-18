@@ -17,7 +17,7 @@
 \item 
 int \hyperlink{jack_8h_a43ac2d1953e13faa44798c7ae9adb370}{jack\_\-process} (jack\_\-nframes\_\-t nframes, void $\ast$arg)
 \begin{DoxyCompactList}\small\item\em The process function that jack executes in another thread for sending the data. \item\end{DoxyCompactList}\item 
-int \hyperlink{jack_8h_a7939448eb0944163b3b3b753f66260a8}{jack\_\-init} (char $\ast$name)
+int \hyperlink{jack_8h_a6253b724a336a171785132d53e79e1b3}{jack\_\-init} (char $\ast$name, char $\ast$connect\_\-output)
 \begin{DoxyCompactList}\small\item\em Initializes the jack connection, including the ringbuffer. \item\end{DoxyCompactList}\item 
 int \hyperlink{jack_8h_ad6f43883062cebf73820ebbc753bef82}{jack\_\-midinote} (int on, char note, char velocity, char channel)
 \begin{DoxyCompactList}\small\item\em Sends a midi note to jack. \item\end{DoxyCompactList}\item 
@@ -56,22 +56,22 @@ the ringbuffer capacity, \# of events in it
 Definition at line 9 of file jack.h.
 
 \subsection{Function Documentation}
-\hypertarget{jack_8h_a7939448eb0944163b3b3b753f66260a8}{
+\hypertarget{jack_8h_a6253b724a336a171785132d53e79e1b3}{
 \index{jack.h@{jack.h}!jack\_\-init@{jack\_\-init}}
 \index{jack\_\-init@{jack\_\-init}!jack.h@{jack.h}}
-\subsubsection[{jack\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}int jack\_\-init (char $\ast$ {\em name})}}
-\label{jack_8h_a7939448eb0944163b3b3b753f66260a8}
+\subsubsection[{jack\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}int jack\_\-init (char $\ast$ {\em name}, \/  char $\ast$ {\em connect\_\-output})}}
+\label{jack_8h_a6253b724a336a171785132d53e79e1b3}
 
 
 Initializes the jack connection, including the ringbuffer. 
 \begin{DoxyParams}{Parameters}
-\item[{\em name}]the name for the jack\_\-init \end{DoxyParams}
+\item[{\em name}]the name for the jack\_\-init \item[{\em connect\_\-output}]a regex to find a port to connect the output to. ex: jack\_\-keyboard to connect to jack keyboard \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
 zero on success, non-\/zero on error 
 \end{DoxyReturn}
 
 
-Definition at line 48 of file jack.c.\hypertarget{jack_8h_ad6f43883062cebf73820ebbc753bef82}{
+Definition at line 49 of file jack.c.\hypertarget{jack_8h_ad6f43883062cebf73820ebbc753bef82}{
 \index{jack.h@{jack.h}!jack\_\-midinote@{jack\_\-midinote}}
 \index{jack\_\-midinote@{jack\_\-midinote}!jack.h@{jack.h}}
 \subsubsection[{jack\_\-midinote}]{\setlength{\rightskip}{0pt plus 5cm}int jack\_\-midinote (int {\em on}, \/  char {\em note}, \/  char {\em velocity}, \/  char {\em channel})}}
@@ -86,7 +86,7 @@ zero on success, non-\/zero on error
 \end{DoxyReturn}
 
 
-Definition at line 80 of file jack.c.\hypertarget{jack_8h_a43ac2d1953e13faa44798c7ae9adb370}{
+Definition at line 102 of file jack.c.\hypertarget{jack_8h_a43ac2d1953e13faa44798c7ae9adb370}{
 \index{jack.h@{jack.h}!jack\_\-process@{jack\_\-process}}
 \index{jack\_\-process@{jack\_\-process}!jack.h@{jack.h}}
 \subsubsection[{jack\_\-process}]{\setlength{\rightskip}{0pt plus 5cm}int jack\_\-process (jack\_\-nframes\_\-t {\em nframes}, \/  void $\ast$ {\em arg})}}
@@ -101,7 +101,7 @@ zero on success, non-\/zero on error
 \end{DoxyReturn}
 
 
-Definition at line 4 of file jack.c.\hypertarget{jack_8h_a9e71f0c6d6abe0ad405526189258ee5f}{
+Definition at line 5 of file jack.c.\hypertarget{jack_8h_a9e71f0c6d6abe0ad405526189258ee5f}{
 \index{jack.h@{jack.h}!jack\_\-stop@{jack\_\-stop}}
 \index{jack\_\-stop@{jack\_\-stop}!jack.h@{jack.h}}
 \subsubsection[{jack\_\-stop}]{\setlength{\rightskip}{0pt plus 5cm}int jack\_\-stop ()}}
@@ -113,7 +113,7 @@ zero on success, non-\/zero on erro
 \end{DoxyReturn}
 
 
-Definition at line 104 of file jack.c.
+Definition at line 126 of file jack.c.
 
 \subsection{Variable Documentation}
 \hypertarget{jack_8h_aad399bbf6b09db5c4b1f676568dc5e94}{

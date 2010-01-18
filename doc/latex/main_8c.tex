@@ -36,6 +36,8 @@ void \hyperlink{main_8c_a4ac4dbdea142037384af03aa7d0dc992}{pluck} (char string, 
 \item 
 void \hyperlink{main_8c_a3dd8b91234b8f7e5d1ec33f842b3809e}{frets\_\-update} (char string)
 \begin{DoxyCompactList}\small\item\em looks on the fretboard and updates the last fret \item\end{DoxyCompactList}\item 
+int \hyperlink{main_8c_a05848de25ac2dbec233935058a1d24b4}{init} ()
+\item 
 int \hyperlink{main_8c_a8bc81d4e8cd0819680a03b135b7d6c4b}{main} (int narg, char $\ast$$\ast$args)
 \end{DoxyCompactItemize}
 \subsection*{Variables}
@@ -48,7 +50,9 @@ char \hyperlink{main_8c_a66b40727e6dc94b32091f5e712783952}{last\_\-fret}
 char \hyperlink{main_8c_ac3a751d6f14e6d43ccc7205b310188bb}{lastnote} \mbox{[}NO\_\-STRINGS\mbox{]}
 \begin{DoxyCompactList}\small\item\em last note that was playing on the string, used to stop it when the next note plays \item\end{DoxyCompactList}\item 
 char \hyperlink{main_8c_aaad95033705517622f5ca0ed8708bfaa}{fretboard} \mbox{[}NO\_\-STRINGS\mbox{]}\mbox{[}NO\_\-FRETS\mbox{]}
-\begin{DoxyCompactList}\small\item\em fretboard button states, either 1 for pressed or 0 for not pressed \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em fretboard button states, either 1 for pressed or 0 for not pressed \item\end{DoxyCompactList}\item 
+int \hyperlink{main_8c_a81c2defc4a84e6388c26f9545f74f643}{transpose}
+\end{DoxyCompactItemize}
 
 
 \subsection{Define Documentation}
@@ -102,28 +106,35 @@ looks on the fretboard and updates the last fret
 \item[{\em string}]the string to look at \end{DoxyParams}
 
 
-Definition at line 76 of file main.c.\hypertarget{main_8c_a8bc81d4e8cd0819680a03b135b7d6c4b}{
+Definition at line 79 of file main.c.\hypertarget{main_8c_a05848de25ac2dbec233935058a1d24b4}{
+\index{main.c@{main.c}!init@{init}}
+\index{init@{init}!main.c@{main.c}}
+\subsubsection[{init}]{\setlength{\rightskip}{0pt plus 5cm}int init ()}}
+\label{main_8c_a05848de25ac2dbec233935058a1d24b4}
+
+
+Definition at line 93 of file main.c.\hypertarget{main_8c_a8bc81d4e8cd0819680a03b135b7d6c4b}{
 \index{main.c@{main.c}!main@{main}}
 \index{main@{main}!main.c@{main.c}}
 \subsubsection[{main}]{\setlength{\rightskip}{0pt plus 5cm}int main (int {\em narg}, \/  char $\ast$$\ast$ {\em args})}}
 \label{main_8c_a8bc81d4e8cd0819680a03b135b7d6c4b}
 
 
-Definition at line 91 of file main.c.\hypertarget{main_8c_a9336149a4d3543698c08ad7efcd927b2}{
+Definition at line 121 of file main.c.\hypertarget{main_8c_a9336149a4d3543698c08ad7efcd927b2}{
 \index{main.c@{main.c}!mute@{mute}}
 \index{mute@{mute}!main.c@{main.c}}
 \subsubsection[{mute}]{\setlength{\rightskip}{0pt plus 5cm}void mute (char {\em string})}}
 \label{main_8c_a9336149a4d3543698c08ad7efcd927b2}
 
 
-Definition at line 48 of file main.c.\hypertarget{main_8c_a4ac4dbdea142037384af03aa7d0dc992}{
+Definition at line 52 of file main.c.\hypertarget{main_8c_a4ac4dbdea142037384af03aa7d0dc992}{
 \index{main.c@{main.c}!pluck@{pluck}}
 \index{pluck@{pluck}!main.c@{main.c}}
 \subsubsection[{pluck}]{\setlength{\rightskip}{0pt plus 5cm}void pluck (char {\em string}, \/  char {\em note}, \/  char {\em velocity})}}
 \label{main_8c_a4ac4dbdea142037384af03aa7d0dc992}
 
 
-Definition at line 59 of file main.c.
+Definition at line 63 of file main.c.
 
 \subsection{Variable Documentation}
 \hypertarget{main_8c_aaad95033705517622f5ca0ed8708bfaa}{
@@ -162,4 +173,11 @@ Definition at line 36 of file main.c.\hypertarget{main_8c_ac3a751d6f14e6d43ccc72
 
 last note that was playing on the string, used to stop it when the next note plays 
 
-Definition at line 42 of file main.c.
+Definition at line 42 of file main.c.\hypertarget{main_8c_a81c2defc4a84e6388c26f9545f74f643}{
+\index{main.c@{main.c}!transpose@{transpose}}
+\index{transpose@{transpose}!main.c@{main.c}}
+\subsubsection[{transpose}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf transpose}}}
+\label{main_8c_a81c2defc4a84e6388c26f9545f74f643}
+This is the number to transpose by. Negative numbers makes stuff go flat, positive sharp and 0 stays the same. 
+
+Definition at line 49 of file main.c.

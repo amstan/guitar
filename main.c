@@ -194,7 +194,7 @@ int main(int narg, char **args) {
 						if(p) {
 							mute(s);
 							
-							char k;
+							int k;
 							
 							if(last_frets[last_fret]==-1) break; //don't play when no button is pressed
 							k=chord_mappings[last_fret][last_frets[last_fret]-1];

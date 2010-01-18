@@ -59,6 +59,14 @@ int chords_load(char *file) {
 	
 	fprintf(stdout,") (done)\n");
 	
+	for(i=0;i<chord_n;i++)
+	{
+		printf("%s",chord_name[i]);
+		for(k=0;k<6;k++)
+			printf(" %d",chord[i][k]);
+		printf("\n");
+	}
+	
 	fclose(in);
 	return 0;
 }
