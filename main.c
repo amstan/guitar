@@ -44,6 +44,10 @@ char lastnote[NO_STRINGS];
 //!fretboard button states, either 1 for pressed or 0 for not pressed
 char fretboard[NO_STRINGS][NO_FRETS];
 
+//!This is the number to transpose by.
+//!Negative numbers makes stuff go flat, positive sharp and 0 stays the same.
+int transpose;
+
 //misc functions
 void mute(char string) {
 	//mute string
@@ -57,11 +61,10 @@ void mute(char string) {
 }
 
 void pluck(char string, char note, char velocity) {
+	note+=transpose;
+	
 	//mute string
 	mute(string);
-	
-	//if(frets[string]==-1) return; //don't play nonplayable string TODO: remove this
-	printf("%d %d %d\n", string,note,velocity);
 		
 	//add a note on to midi
 	jack_midinote(1,note,velocity,0);
@@ -87,12 +90,8 @@ void frets_update(char string) {
 			last_fret=i;
 }
 
-//*Main Function*//
-int main(int narg, char **args) {
-	args_init(narg,args);
-	
-	int i,j;
-	
+int init()
+{
 	fprintf(stdout,"Welcome to the Guitar Sequencer!\n made by Alex Stan\n\n");
 	
 	int status=0;
@@ -102,7 +101,11 @@ int main(int narg, char **args) {
 	status += chords_load(config_look("chords"));
 	status += chords_load_mappings(config_look("chord_mappings"));
 	
-	status += jack_init(config_look("jack_client"));
+	if(!jack_client) status += jack_init(config_look("jack_client"));
+	
+	transpose=0;
+	transpose=atoi(config_look("transpose"));
+	fprintf(stdout,"Transposing by %+i subtunes.\n",transpose);
 	
 	if(status!=0)
 	{
@@ -111,6 +114,16 @@ int main(int narg, char **args) {
 		return 1;
 	}
 	
+	return 0;
+}
+
+//*Main Function*//
+int main(int narg, char **args) {
+	args_init(narg,args);
+	
+	int i,j;
+	
+	if(init()) return 1;
 	
 	//clear some memory
 	for(i=0;i<NO_STRINGS;i++) {
@@ -181,13 +194,10 @@ int main(int narg, char **args) {
 						if(p) {
 							mute(s);
 							
-							//printf("%d %d %d\n",last_fret,last_frets[last_fret]);
-							
 							char k;
 							
 							if(last_frets[last_fret]==-1) break; //don't play when no button is pressed
 							k=chord_mappings[last_fret][last_frets[last_fret]-1];
-							printf("%s\n",chord_name[k]);
 							
 							if(k==-1) break; //don't play non assigned chord
 							if(chord[k][s]==-1) break; //don't play unplayable note
@@ -209,11 +219,7 @@ int main(int narg, char **args) {
 				}
 				if(command[2]=='6')
 				{
-					status += config_init("etc/config");
-					status += notes_load(config_look("notes"));
-					status += tuning_load(config_look("tuning"));
-					status += chords_load(config_look("chords"));
-					status += chords_load_mappings(config_look("chord_mappings"));
+					init();
 				}
 				break;
 				

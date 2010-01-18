@@ -2,10 +2,11 @@
 jack_client = guitarseq
 channel = 0
 velocity = 64
+transpose = +18
 
 ##Files
 notes = etc/notes.cfg
-tuning = etc/tuning_eadgbe.cfg
+tuning = etc/tuning_dadgbe.cfg
 chords = etc/chords.cfg
 chord_mappings = etc/hotel_california.cfg
 #chord_mappings = etc/chord_mappings.cfg
