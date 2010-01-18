@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sys/errno.h>
 #include "jack.h"
 
 int jack_process(jack_nframes_t nframes, void *arg) {
@@ -45,7 +46,7 @@ int jack_process(jack_nframes_t nframes, void *arg) {
 	return 0;
 }
 
-int jack_init(char *name) {
+int jack_init(char *name, char *connect_output) {
 	//connect to jack
 	if((jack_client = jack_client_open (name,JackNullOption,0)) == 0) { //TODO: change this
 		fprintf (stderr, "Jack server not running?\n");
@@ -72,6 +73,27 @@ int jack_init(char *name) {
 	}
 	jack_ringbuffer_reset(ringbuffer);
 	fprintf(stdout,"Ringbuffer initialized!\n");
+	
+	//connect to some other client
+	char **ports;
+	int i=0;
+	
+	fprintf(stdout,"Looking for ports: %s\n",connect_output);
+	ports=jack_get_ports(jack_client,connect_output,"",0);
+	
+	//look for the last port
+	if(!ports) return 0;
+	while(ports[i++]);
+	i-=2;
+	
+	if(ports[i]) {
+		fprintf(stdout,"Connecting to %s...",ports[i]);
+		switch(jack_connect(jack_client,"guitarseq:midi_out",ports[i])) {
+			case 0:      fprintf(stdout," (done)\n");             break;
+			case EEXIST: fprintf(stdout," already connected.\n"); break;
+			default:     fprintf(stderr," could not connect.\n");
+		}
+	}
 	
 	return 0;
 }

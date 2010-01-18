@@ -101,7 +101,7 @@ int init()
 	status += chords_load(config_look("chords"));
 	status += chords_load_mappings(config_look("chord_mappings"));
 	
-	if(!jack_client) status += jack_init(config_look("jack_client"));
+	if(!jack_client) status += jack_init(config_look("jack_client"),config_look("connect_output"));
 	
 	transpose=0;
 	transpose=atoi(config_look("transpose"));
