@@ -48,7 +48,7 @@ int jack_process(jack_nframes_t nframes, void *arg) {
 
 int jack_init(char *name, char *connect_output) {
 	//connect to jack
-	if((jack_client = jack_client_open (name,JackNullOption,0)) == 0) { //TODO: change this
+	if((jack_client = jack_client_open (name,args_exists('s')?JackNullOption:JackNoStartServer,0)) == 0) { //TODO: change this
 		fprintf (stderr, "Jack server not running?\n");
 		return 1;
 	}

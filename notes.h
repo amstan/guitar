@@ -25,7 +25,8 @@ int notes_load(char *file);
 
 /*! Translate notes to standard format
  * @param note the bad form note to translate
- * @note this function edits the argument
+ * @note This function edits the argument!
+ *       Do not give it constant strings, use notes_translate(strdup("string literal")) if you need to do so.
  * @return a new string for the note
  */
 char *notes_translate(char *note);

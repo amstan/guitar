@@ -4,10 +4,12 @@
 #include <string.h>
 #include "tuning.h"
 #include "chords.h"
+#include "notes.h"
 
 int chords_look(char *name) {
 	int i;
 	if(name[0]=='-') return -1;
+	notes_translate(name);
 	for(i=0;i<chord_n;i++)
 		if(strcmp(name,chord_name[i])==0) return i;
 		return -1;
@@ -30,9 +32,12 @@ int chords_load(char *file) {
 	chord_n=0;
 	while(!feof(in)) {
 		fscanf(in,"%[^\t]",chord_name[chord_n]);
+		notes_translate(chord_name[chord_n]);
 		
 		for(i=0;i<NO_STRINGS;i++) {
 			fscanf(in,"%s",note);
+			notes_translate(note);
+			
 			if((note[0]=='-')||(note[0]=='x')||(note[0]=='X'))
 				chord[chord_n][i]=-1;
 			else if(isdigit(note[0]))
@@ -97,6 +102,7 @@ int chords_load_mappings(char *file) {
 		j=0;
 		do {
 			fscanf(in,"%s%*[\t ]s",name);
+			notes_translate(name);
 			chord_mappings[i][j]=chords_look(name);
 			j++;
 		} while(fscanf(in,"%[\n\r\t ]s",space)==0);

@@ -124,12 +124,6 @@ int main(int narg, char **args) {
 	int i,j;
 	
 	if(init()) return 1;
-	/*char test[]="Cb/Cb";
-	//notes_translate(strchr(test,'/')+1);
-	notes_translate(test);
-	printf("\"%s\"\n",test);
-	//printf("\"%s\"\n", strchr(test,'/')+1);
-	printf("done");*/
 	
 	//clear some memory
 	for(i=0;i<NO_STRINGS;i++) {

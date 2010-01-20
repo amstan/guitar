@@ -27,4 +27,4 @@ clean-doc:
 
 #cool stuff:
 runx: all
-	./emulated/emulated|./$(EXECUTABLE) -o
+	./emulated/emulated|./$(EXECUTABLE) -o -s
