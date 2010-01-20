@@ -143,7 +143,7 @@ int main(int narg, char **args) {
 		 f; //fret
 	char mode='n';
 	
-	while(command[0]!='e') {
+	do {
 		if(fscanf(stdin,"%s",command)!=1)
 			break;
 		
@@ -231,10 +231,11 @@ int main(int narg, char **args) {
 				if(command[0]!='e') fprintf(stderr,"No such guitar event \"%s\"!\n",command);
 				break;
 		}
-	}
+	} while(command[0]!='e');
 	
 	//cleanup
 	fprintf(stdout,"Exiting! cleanup...\n");
+	jack_stop();
 	
 	return 0;
 }
