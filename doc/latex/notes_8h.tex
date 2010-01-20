@@ -17,7 +17,9 @@
 int \hyperlink{notes_8h_a05cd0585389db7bfb2b7ce90f36cc5fe}{notes\_\-look} (char $\ast$target\_\-note)
 \begin{DoxyCompactList}\small\item\em Looks for a note by name. \item\end{DoxyCompactList}\item 
 int \hyperlink{notes_8h_a15271abde190b918ab38c80d5ccee7d9}{notes\_\-load} (char $\ast$file)
-\begin{DoxyCompactList}\small\item\em Loads the notes array from the file. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Loads the notes array from the file. \item\end{DoxyCompactList}\item 
+char $\ast$ \hyperlink{notes_8h_a1d5c222acbe8d281cd6602a4a7033255}{notes\_\-translate} (char $\ast$note)
+\begin{DoxyCompactList}\small\item\em Translate notes to standard format. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
@@ -80,7 +82,25 @@ the id of the note \$name with the condition that notes\_\-look(notes\mbox{[}id\
 \end{DoxyReturn}
 
 
-Definition at line 7 of file notes.c.
+Definition at line 7 of file notes.c.\hypertarget{notes_8h_a1d5c222acbe8d281cd6602a4a7033255}{
+\index{notes.h@{notes.h}!notes\_\-translate@{notes\_\-translate}}
+\index{notes\_\-translate@{notes\_\-translate}!notes.h@{notes.h}}
+\subsubsection[{notes\_\-translate}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ notes\_\-translate (char $\ast$ {\em note})}}
+\label{notes_8h_a1d5c222acbe8d281cd6602a4a7033255}
+
+
+Translate notes to standard format. 
+\begin{DoxyParams}{Parameters}
+\item[{\em note}]the bad form note to translate \end{DoxyParams}
+\begin{DoxyNote}{Note}
+this function edits the argument 
+\end{DoxyNote}
+\begin{DoxyReturn}{Returns}
+a new string for the note 
+\end{DoxyReturn}
+
+
+Definition at line 48 of file notes.c.
 
 \subsection{Variable Documentation}
 \hypertarget{notes_8h_ae6186875775d374f5b92c20a7f5798cf}{

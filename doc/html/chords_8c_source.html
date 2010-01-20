@@ -101,43 +101,43 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00059"></a>00059         
 <a name="l00060"></a>00060         fprintf(stdout,<span class="stringliteral">&quot;) (done)\n&quot;</span>);
 <a name="l00061"></a>00061         
-<a name="l00062"></a>00062         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="chords_8h.html#af2a4675e92daf42e6d76e90e73b7ad0f" title="number of chords">chord_n</a>;i++)
-<a name="l00063"></a>00063         {
-<a name="l00064"></a>00064                 printf(<span class="stringliteral">&quot;%s&quot;</span>,<a class="code" href="chords_8h.html#a643383036c2f23e15b7ba9fe636d19ce" title="chord names array">chord_name</a>[i]);
-<a name="l00065"></a>00065                 <span class="keywordflow">for</span>(k=0;k&lt;6;k++)
-<a name="l00066"></a>00066                         printf(<span class="stringliteral">&quot; %d&quot;</span>,<a class="code" href="chords_8h.html#ae456eca69f356740bc4bd705c696b899" title="chord array which contains the individual notes for the chord">chord</a>[i][k]);
-<a name="l00067"></a>00067                 printf(<span class="stringliteral">&quot;\n&quot;</span>);
-<a name="l00068"></a>00068         }
-<a name="l00069"></a>00069         
-<a name="l00070"></a>00070         fclose(in);
-<a name="l00071"></a>00071         <span class="keywordflow">return</span> 0;
-<a name="l00072"></a>00072 }
-<a name="l00073"></a>00073 
-<a name="l00074"></a><a class="code" href="chords_8h.html#a5d6974dcee072352089adf48a4c93875">00074</a> <span class="keywordtype">int</span> <a class="code" href="chords_8c.html#a5d6974dcee072352089adf48a4c93875" title="Loads the chord mappings from the file to the chord_mappings array.">chords_load_mappings</a>(<span class="keywordtype">char</span> *file) {
-<a name="l00075"></a>00075         FILE *in;
-<a name="l00076"></a>00076         <span class="keywordtype">int</span> i,j;
-<a name="l00077"></a>00077         <span class="keywordtype">char</span> name[<a class="code" href="chords_8h.html#a44285dbcfa8e26ec2a2a8f997bdc7752" title="the maximum length of a chord name">CHORD_NAME_LEN</a>], space[<a class="code" href="chords_8h.html#a44285dbcfa8e26ec2a2a8f997bdc7752" title="the maximum length of a chord name">CHORD_NAME_LEN</a>];
-<a name="l00078"></a>00078         
-<a name="l00079"></a>00079         fprintf(stdout,<span class="stringliteral">&quot;Loading chord mappings... &quot;</span>);
-<a name="l00080"></a>00080         
-<a name="l00081"></a>00081         in=fopen(file,<span class="stringliteral">&quot;r&quot;</span>);
-<a name="l00082"></a>00082         <span class="keywordflow">if</span>(!in) {
-<a name="l00083"></a>00083                 fflush(stdout);
-<a name="l00084"></a>00084                 fprintf(stderr, <span class="stringliteral">&quot;Error: Cannot open chord mappings file \&quot;%s\&quot;!\n&quot;</span>,file);
-<a name="l00085"></a>00085                 <span class="keywordflow">return</span> 1;
-<a name="l00086"></a>00086         }
-<a name="l00087"></a>00087         
-<a name="l00088"></a>00088         <span class="comment">//clean what was in there before</span>
-<a name="l00089"></a>00089         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="main_8h.html#af6685a52e583bfac41928534d9e937bf">NO_STRINGS</a>;i++)
-<a name="l00090"></a>00090                 <span class="keywordflow">for</span>(j=0;j&lt;<a class="code" href="main_8h.html#af8f8940e0abee3d9a8ca6787d18c7161">NO_FRETS</a>;j++)
-<a name="l00091"></a>00091                         <a class="code" href="chords_8h.html#aab5e2a8a89bc330e5d0c885427e49db3" title="chord mappings for each fret">chord_mappings</a>[i][j]=-1;
-<a name="l00092"></a>00092         
-<a name="l00093"></a>00093         fscanf(in,<span class="stringliteral">&quot;%*[^\n]s&quot;</span>); <span class="comment">//skip the first line with the fret #s</span>
-<a name="l00094"></a>00094         
-<a name="l00095"></a>00095         <span class="keywordflow">for</span>(i=NO_STRINGS-1;i&gt;0;i--) {
-<a name="l00096"></a>00096                 j=0;
-<a name="l00097"></a>00097                 <span class="keywordflow">do</span> {
-<a name="l00098"></a>00098                 <span class="comment">//for(j=0;j&lt;NO_FRETS;j++) {</span>
+<a name="l00062"></a>00062         fclose(in);
+<a name="l00063"></a>00063         <span class="keywordflow">return</span> 0;
+<a name="l00064"></a>00064         
+<a name="l00065"></a>00065         <span class="comment">//for debug</span>
+<a name="l00066"></a>00066         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="chords_8h.html#af2a4675e92daf42e6d76e90e73b7ad0f" title="number of chords">chord_n</a>;i++)
+<a name="l00067"></a>00067         {
+<a name="l00068"></a>00068                 printf(<span class="stringliteral">&quot;%s&quot;</span>,<a class="code" href="chords_8h.html#a643383036c2f23e15b7ba9fe636d19ce" title="chord names array">chord_name</a>[i]);
+<a name="l00069"></a>00069                 <span class="keywordflow">for</span>(k=0;k&lt;6;k++)
+<a name="l00070"></a>00070                         printf(<span class="stringliteral">&quot; %d&quot;</span>,<a class="code" href="chords_8h.html#ae456eca69f356740bc4bd705c696b899" title="chord array which contains the individual notes for the chord">chord</a>[i][k]);
+<a name="l00071"></a>00071                 printf(<span class="stringliteral">&quot;\n&quot;</span>);
+<a name="l00072"></a>00072         }
+<a name="l00073"></a>00073 }
+<a name="l00074"></a>00074 
+<a name="l00075"></a><a class="code" href="chords_8h.html#a5d6974dcee072352089adf48a4c93875">00075</a> <span class="keywordtype">int</span> <a class="code" href="chords_8c.html#a5d6974dcee072352089adf48a4c93875" title="Loads the chord mappings from the file to the chord_mappings array.">chords_load_mappings</a>(<span class="keywordtype">char</span> *file) {
+<a name="l00076"></a>00076         FILE *in;
+<a name="l00077"></a>00077         <span class="keywordtype">int</span> i,j;
+<a name="l00078"></a>00078         <span class="keywordtype">char</span> name[<a class="code" href="chords_8h.html#a44285dbcfa8e26ec2a2a8f997bdc7752" title="the maximum length of a chord name">CHORD_NAME_LEN</a>], space[<a class="code" href="chords_8h.html#a44285dbcfa8e26ec2a2a8f997bdc7752" title="the maximum length of a chord name">CHORD_NAME_LEN</a>];
+<a name="l00079"></a>00079         
+<a name="l00080"></a>00080         fprintf(stdout,<span class="stringliteral">&quot;Loading chord mappings... &quot;</span>);
+<a name="l00081"></a>00081         
+<a name="l00082"></a>00082         in=fopen(file,<span class="stringliteral">&quot;r&quot;</span>);
+<a name="l00083"></a>00083         <span class="keywordflow">if</span>(!in) {
+<a name="l00084"></a>00084                 fflush(stdout);
+<a name="l00085"></a>00085                 fprintf(stderr, <span class="stringliteral">&quot;Error: Cannot open chord mappings file \&quot;%s\&quot;!\n&quot;</span>,file);
+<a name="l00086"></a>00086                 <span class="keywordflow">return</span> 1;
+<a name="l00087"></a>00087         }
+<a name="l00088"></a>00088         
+<a name="l00089"></a>00089         <span class="comment">//clean what was in there before</span>
+<a name="l00090"></a>00090         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="main_8h.html#af6685a52e583bfac41928534d9e937bf">NO_STRINGS</a>;i++)
+<a name="l00091"></a>00091                 <span class="keywordflow">for</span>(j=0;j&lt;<a class="code" href="main_8h.html#af8f8940e0abee3d9a8ca6787d18c7161">NO_FRETS</a>;j++)
+<a name="l00092"></a>00092                         <a class="code" href="chords_8h.html#aab5e2a8a89bc330e5d0c885427e49db3" title="chord mappings for each fret">chord_mappings</a>[i][j]=-1;
+<a name="l00093"></a>00093         
+<a name="l00094"></a>00094         fscanf(in,<span class="stringliteral">&quot;%*[^\n]s&quot;</span>); <span class="comment">//skip the first line with the fret #s</span>
+<a name="l00095"></a>00095         
+<a name="l00096"></a>00096         <span class="keywordflow">for</span>(i=NO_STRINGS-1;i&gt;0;i--) {
+<a name="l00097"></a>00097                 j=0;
+<a name="l00098"></a>00098                 <span class="keywordflow">do</span> {
 <a name="l00099"></a>00099                         fscanf(in,<span class="stringliteral">&quot;%s%*[\t ]s&quot;</span>,name);
 <a name="l00100"></a>00100                         <a class="code" href="chords_8h.html#aab5e2a8a89bc330e5d0c885427e49db3" title="chord mappings for each fret">chord_mappings</a>[i][j]=<a class="code" href="chords_8c.html#a6eb527057e5f9bfcfa7d735fd88915bb" title="Looks for a chord by name.">chords_look</a>(name);
 <a name="l00101"></a>00101                         j++;
@@ -167,7 +167,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on Mon Jan 18 14:36:23 2010 for guitarseq by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on Wed Jan 20 09:32:08 2010 for guitarseq by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

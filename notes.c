@@ -44,3 +44,30 @@ int notes_load(char *file) {
 	
 	return 0;
 }
+
+char *notes_translate(char *note) {
+	int i;
+	
+	if(!note) return note;
+	
+	if(note[1]=='b') {
+		if((note[0]=='C')||(note[0]=='F')) {
+			i=1;
+			while(note[i]=note[++i]);
+		} else {
+			note[1]='#';
+		}
+		note[0]=(((note[0]-'A'+7)-1)%7)+'A';
+	}
+	if(((note[0]=='B')||(note[0]=='E'))&(note[1]=='#')) {
+		note[0]=(((note[0]-'A'+7)+1)%7)+'A';
+		i=1;
+		while(note[i]=note[++i]);
+	}
+	
+	char *rest;
+	rest=strchr(note,'/');
+	if(rest) notes_translate(rest+1);
+	
+	return note;
+}
