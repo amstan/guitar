@@ -1,0 +1,15 @@
+mainboard
+-battery(+plug) 
+-usb uart X
+-avr X
+-multiplexers X
+
+aux board
+-6 switches X
+-RGB led X
+-USB(cable+plug)
+
+touchboard
+
+led board
+-6 white leds
