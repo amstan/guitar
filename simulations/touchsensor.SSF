@@ -73,8 +73,8 @@ Wave: q1_1
 WaveColor: 65280
 WaveProbeLabel: A
 WaveProbeIndex: 0
-WavePrimaryYDivSize: 1.00000000000000E-002
-WavePrimaryYOffset: -8.30000000000000E-001
+WavePrimaryYDivSize: 1.00000000000000E-007
+WavePrimaryYOffset: -1.89649000000000E-001
 WaveSecondaryYDivSize: 0.00000000000000E+000
 WaveSecondaryYOffset: 0.00000000000000E+000
 ChartActiveCellIndex: 0
