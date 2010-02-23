@@ -2,7 +2,7 @@
 #define UART_H
 
 /*! @file uart.h
- * ADC reading library
+ * UART Communication Library
  *
  * ----------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
@@ -24,7 +24,7 @@ void uart_init(void);
 /*! Send character c down the UART Tx
  * Wait until tx holding register is empty.
  * @param c character to send
- * @param stream fine stream to putchar on
+ * @param stream file stream to putchar on
  * @returns 
  */
 int uart_putchar(char c, FILE *stream);
