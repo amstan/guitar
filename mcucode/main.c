@@ -78,7 +78,7 @@ void printfloat(double x)
 int main(void)
 {
 	uart_init(); // Initializes the UART for 19200 baud
-		
+	
 	stdout = stdin = &uart_str;  // Set standard input and output streams
 	//b1, b2, b3=led,solar,ac
 	//buttons b6, b7, b4 center, e2, e3

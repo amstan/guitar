@@ -2,7 +2,6 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 
-
 /*****************************************************************************
 *
 *   Function name : ADC_init
