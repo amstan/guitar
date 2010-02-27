@@ -1,0 +1,10 @@
+/**
+@mainpage Guitar MCU Code
+
+@section intro Introduction
+
+The software that goes on the MIDI Guitar, running on ATMEGA32.
+
+@see <http://csclub.uwaterloo.ca/~amstan/guitar/>
+
+*/
