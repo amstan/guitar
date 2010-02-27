@@ -1,0 +1,105 @@
+\hypertarget{main_8c}{
+\section{main.c File Reference}
+\label{main_8c}\index{main.c@{main.c}}
+}
+{\ttfamily \#include $<$ctype.h$>$}\par
+{\ttfamily \#include $<$stdio.h$>$}\par
+{\ttfamily \#include $<$avr/io.h$>$}\par
+{\ttfamily \#include $<$avr/pgmspace.h$>$}\par
+{\ttfamily \#include $<$util/delay.h$>$}\par
+{\ttfamily \#include \char`\"{}uart.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}adc.h\char`\"{}}\par
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+char \hyperlink{main_8c_a23fda7e3ef40e0408630c4cd6b68dec1}{bol\_\-state} (int port)
+\item 
+char \hyperlink{main_8c_a10876335b04c51b3d86adaf8e4255565}{bol\_\-stateE} (int port)
+\item 
+void \hyperlink{main_8c_a53a2dc937280fa344d54c731ac0e3ec2}{toggle} (int port)
+\item 
+void \hyperlink{main_8c_ae683fe63c33c388e9ba1c6392dd477eb}{clear} (void)
+\item 
+char $\ast$ \hyperlink{main_8c_a223886695da33b433674a2aca597c7c1}{state} (int port)
+\item 
+double \hyperlink{main_8c_a54017cd0b82b74ef17b127ce2691dbe0}{voltage} (void)
+\item 
+void \hyperlink{main_8c_aca327c941ec44f0774493eb675efb98d}{printfloat} (double x)
+\item 
+int \hyperlink{main_8c_a840291bc02cba5474a4cb46a9b9566fe}{main} (void)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+FILE \hyperlink{main_8c_a14798c028401767ed27eed7a06030295}{uart\_\-str} = FDEV\_\-SETUP\_\-STREAM(uart\_\-putchar, uart\_\-getchar, \_\-FDEV\_\-SETUP\_\-RW)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{main_8c_a23fda7e3ef40e0408630c4cd6b68dec1}{
+\index{main.c@{main.c}!bol\_\-state@{bol\_\-state}}
+\index{bol\_\-state@{bol\_\-state}!main.c@{main.c}}
+\subsubsection[{bol\_\-state}]{\setlength{\rightskip}{0pt plus 5cm}char bol\_\-state (int {\em port})}}
+\label{main_8c_a23fda7e3ef40e0408630c4cd6b68dec1}
+
+
+Definition at line 15 of file main.c.\hypertarget{main_8c_a10876335b04c51b3d86adaf8e4255565}{
+\index{main.c@{main.c}!bol\_\-stateE@{bol\_\-stateE}}
+\index{bol\_\-stateE@{bol\_\-stateE}!main.c@{main.c}}
+\subsubsection[{bol\_\-stateE}]{\setlength{\rightskip}{0pt plus 5cm}char bol\_\-stateE (int {\em port})}}
+\label{main_8c_a10876335b04c51b3d86adaf8e4255565}
+
+
+Definition at line 20 of file main.c.\hypertarget{main_8c_ae683fe63c33c388e9ba1c6392dd477eb}{
+\index{main.c@{main.c}!clear@{clear}}
+\index{clear@{clear}!main.c@{main.c}}
+\subsubsection[{clear}]{\setlength{\rightskip}{0pt plus 5cm}void clear (void)}}
+\label{main_8c_ae683fe63c33c388e9ba1c6392dd477eb}
+
+
+Definition at line 38 of file main.c.\hypertarget{main_8c_a840291bc02cba5474a4cb46a9b9566fe}{
+\index{main.c@{main.c}!main@{main}}
+\index{main@{main}!main.c@{main.c}}
+\subsubsection[{main}]{\setlength{\rightskip}{0pt plus 5cm}int main (void)}}
+\label{main_8c_a840291bc02cba5474a4cb46a9b9566fe}
+
+
+Definition at line 78 of file main.c.\hypertarget{main_8c_aca327c941ec44f0774493eb675efb98d}{
+\index{main.c@{main.c}!printfloat@{printfloat}}
+\index{printfloat@{printfloat}!main.c@{main.c}}
+\subsubsection[{printfloat}]{\setlength{\rightskip}{0pt plus 5cm}void printfloat (double {\em x})}}
+\label{main_8c_aca327c941ec44f0774493eb675efb98d}
+
+
+Definition at line 62 of file main.c.\hypertarget{main_8c_a223886695da33b433674a2aca597c7c1}{
+\index{main.c@{main.c}!state@{state}}
+\index{state@{state}!main.c@{main.c}}
+\subsubsection[{state}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ state (int {\em port})}}
+\label{main_8c_a223886695da33b433674a2aca597c7c1}
+
+
+Definition at line 47 of file main.c.\hypertarget{main_8c_a53a2dc937280fa344d54c731ac0e3ec2}{
+\index{main.c@{main.c}!toggle@{toggle}}
+\index{toggle@{toggle}!main.c@{main.c}}
+\subsubsection[{toggle}]{\setlength{\rightskip}{0pt plus 5cm}void toggle (int {\em port})}}
+\label{main_8c_a53a2dc937280fa344d54c731ac0e3ec2}
+
+
+Definition at line 25 of file main.c.\hypertarget{main_8c_a54017cd0b82b74ef17b127ce2691dbe0}{
+\index{main.c@{main.c}!voltage@{voltage}}
+\index{voltage@{voltage}!main.c@{main.c}}
+\subsubsection[{voltage}]{\setlength{\rightskip}{0pt plus 5cm}double voltage (void)}}
+\label{main_8c_a54017cd0b82b74ef17b127ce2691dbe0}
+
+
+Definition at line 53 of file main.c.
+
+\subsection{Variable Documentation}
+\hypertarget{main_8c_a14798c028401767ed27eed7a06030295}{
+\index{main.c@{main.c}!uart\_\-str@{uart\_\-str}}
+\index{uart\_\-str@{uart\_\-str}!main.c@{main.c}}
+\subsubsection[{uart\_\-str}]{\setlength{\rightskip}{0pt plus 5cm}FILE {\bf uart\_\-str} = FDEV\_\-SETUP\_\-STREAM(uart\_\-putchar, uart\_\-getchar, \_\-FDEV\_\-SETUP\_\-RW)}}
+\label{main_8c_a14798c028401767ed27eed7a06030295}
+
+
+Definition at line 12 of file main.c.

@@ -380,3 +380,11 @@ clean_list :
 .PHONY : all begin finish end sizebefore sizeafter gccversion coff extcoff \
 	clean clean_list program
 
+
+
+
+#Docs
+doc:
+	doxygen
+clean-doc:
+	rm -R doc/

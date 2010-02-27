@@ -1,0 +1,72 @@
+\hypertarget{uart_8c}{
+\section{uart.c File Reference}
+\label{uart_8c}\index{uart.c@{uart.c}}
+}
+{\ttfamily \#include $<$stdint.h$>$}\par
+{\ttfamily \#include $<$stdio.h$>$}\par
+{\ttfamily \#include $<$avr/io.h$>$}\par
+{\ttfamily \#include \char`\"{}uart.h\char`\"{}}\par
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{uart_8c_a0c0ca72359ddf28dcd15900dfba19343}{uart\_\-init} (void)
+\begin{DoxyCompactList}\small\item\em Perform UART startup initialization. \item\end{DoxyCompactList}\item 
+int \hyperlink{uart_8c_a985ba70f2a53d95f1fd11f70f1d8f4f6}{uart\_\-putchar} (char c, FILE $\ast$stream)
+\begin{DoxyCompactList}\small\item\em Send character c down the UART Tx Wait until tx holding register is empty. \item\end{DoxyCompactList}\item 
+int \hyperlink{uart_8c_ae29d6eea5f2e7997551b4acb64082d8e}{uart\_\-getchar} (FILE $\ast$stream)
+\begin{DoxyCompactList}\small\item\em Receive a character from the UART Rx. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{uart_8c_ae29d6eea5f2e7997551b4acb64082d8e}{
+\index{uart.c@{uart.c}!uart\_\-getchar@{uart\_\-getchar}}
+\index{uart\_\-getchar@{uart\_\-getchar}!uart.c@{uart.c}}
+\subsubsection[{uart\_\-getchar}]{\setlength{\rightskip}{0pt plus 5cm}int uart\_\-getchar (FILE $\ast$ {\em stream})}}
+\label{uart_8c_ae29d6eea5f2e7997551b4acb64082d8e}
+
+
+Receive a character from the UART Rx. This features a simple line-\/editor that allows to delete and re-\/edit the characters entered, until either CR or NL is entered. Printable characters entered will be echoed using \hyperlink{uart_8c_a985ba70f2a53d95f1fd11f70f1d8f4f6}{uart\_\-putchar()}.
+
+\begin{DoxyParagraph}{Editing characters:}
+
+\begin{DoxyItemize}
+\item {\bfseries }(BS) or  (DEL) delete the previous character
+\item $^\wedge$u kills the entire input buffer
+\item $^\wedge$w deletes the previous word
+\item $^\wedge$r sends a CR, and then reprints the buffer
+\item will be replaced by a single space
+\end{DoxyItemize}
+\end{DoxyParagraph}
+All other control characters will be ignored.
+
+The internal line buffer is RX\_\-BUFSIZE (80) characters long, which includes the terminating $\backslash$n (but no terminating ). If the buffer is full (i. e., at RX\_\-BUFSIZE-\/1 characters in order to keep space for the trailing $\backslash$n), any further input attempts will send a $\backslash$a to \hyperlink{uart_8c_a985ba70f2a53d95f1fd11f70f1d8f4f6}{uart\_\-putchar()} (BEL character), although line editing is still allowed.
+
+Input errors while talking to the UART will cause an immediate return of -\/1 (error indication). Notably, this will be caused by a framing error (e. g. serial line \char`\"{}break\char`\"{} condition), by an input overrun, and by a parity error (if parity was enabled and automatic parity recognition is supported by hardware).
+
+Successive calls to \hyperlink{uart_8c_ae29d6eea5f2e7997551b4acb64082d8e}{uart\_\-getchar()} will be satisfied from the internal buffer until that buffer is emptied again. 
+
+Definition at line 98 of file uart.c.\hypertarget{uart_8c_a0c0ca72359ddf28dcd15900dfba19343}{
+\index{uart.c@{uart.c}!uart\_\-init@{uart\_\-init}}
+\index{uart\_\-init@{uart\_\-init}!uart.c@{uart.c}}
+\subsubsection[{uart\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}void uart\_\-init (void)}}
+\label{uart_8c_a0c0ca72359ddf28dcd15900dfba19343}
+
+
+Perform UART startup initialization. Initialize the UART to 9600 Bd, tx/rx, 8N1. 
+
+Definition at line 26 of file uart.c.\hypertarget{uart_8c_a985ba70f2a53d95f1fd11f70f1d8f4f6}{
+\index{uart.c@{uart.c}!uart\_\-putchar@{uart\_\-putchar}}
+\index{uart\_\-putchar@{uart\_\-putchar}!uart.c@{uart.c}}
+\subsubsection[{uart\_\-putchar}]{\setlength{\rightskip}{0pt plus 5cm}int uart\_\-putchar (char {\em c}, \/  FILE $\ast$ {\em stream})}}
+\label{uart_8c_a985ba70f2a53d95f1fd11f70f1d8f4f6}
+
+
+Send character c down the UART Tx Wait until tx holding register is empty. 
+\begin{DoxyParams}{Parameters}
+\item[{\em c}]character to send \item[{\em stream}]file stream to putchar on \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\end{DoxyReturn}
+
+
+Definition at line 47 of file uart.c.
