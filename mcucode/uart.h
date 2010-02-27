@@ -36,7 +36,7 @@ int uart_putchar(char c, FILE *stream);
  * This features a simple line-editor that allows to delete and re-edit the characters entered, until either CR or NL is entered. Printable characters entered will be echoed using uart_putchar().
  *
  * @par Editing characters:
- * - \b (BS) or \177 (DEL) delete the previous character
+ * - \\b (BS) or \177 (DEL) delete the previous character
  * - ^u kills the entire input buffer
  * - ^w deletes the previous word
  * - ^r sends a CR, and then reprints the buffer
