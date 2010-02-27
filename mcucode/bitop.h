@@ -2,8 +2,8 @@
 #define BITOP_H
 
 /*! @file bitop.h
-* Bit Operations Library
-*/
+ * Bit Operations Library
+ */
 
 /// Clear bit
 #define clear_bit(reg, bitNumb)           ((reg) &= ~(1 << (bitNumb)))
