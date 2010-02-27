@@ -6,15 +6,18 @@
 */
 
 /// Clear bit
-#define clear_bit( reg, bitNumb )	((reg) &= ~(1 << (bitNumb)))
+#define clear_bit(reg, bitNumb)           ((reg) &= ~(1 << (bitNumb)))
 
 /// Set bit
-#define set_bit( reg, bitNumb )		((reg) |= (1 << (bitNumb)))
+#define set_bit(reg, bitNumb)             ((reg) |= (1 << (bitNumb)))
+
+/// Toggle bit
+#define toggle_bit(reg, bitNumb)          ((reg) ^= (1 << (bitNumb)))
 
 /// Test bit
-#define test_bit( reg, bitNumb )	((reg) & (1 << (bitNumb)))
+#define test_bit(reg, bitNumb)            ((reg) & (1 << (bitNumb)))
 
-///Change Bit
-#define change_bit(ptr, position, val)	{if (val)  set_bit(ptr, position); else	clear_bit(ptr,position);}
+/// Change Bit
+#define change_bit(reg, bitNumb, val)     {if (val) set_bit(reg, bitNumb); else clear_bit(reg,bitNumb);}
 
 #endif
