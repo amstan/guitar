@@ -94,6 +94,8 @@ int init()
 {
 	fprintf(stdout,"Welcome to the Guitar Sequencer!\n made by Alex Stan\n\n");
 	
+	dbusTest();
+	
 	int status=0;
 	status += config_init("etc/config.ini");
 	status += notes_load(config_look("notes"));
