@@ -12,7 +12,8 @@ int chords_look(char *name) {
 	notes_translate(name);
 	for(i=0;i<chord_n;i++)
 		if(strcmp(name,chord_name[i])==0) return i;
-		return -1;
+	fprintf(stderr,"Error: Missing chord \"%s\"\n",name);
+	return -1;
 }
 
 int chords_load(char *file) {
