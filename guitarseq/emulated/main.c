@@ -67,6 +67,18 @@ int main() {
 			fprintf(stdout,"%cf5%d\n",r,x-65469);
 		else if((x>=49)&&(x<=56))
 			fprintf(stdout,"%cf4%d\n",r,x-48);
+		
+		
+		
+		else if(x==57)
+			fprintf(stdout,"%cf49\n",r);
+		else if(x==48)
+			fprintf(stdout,"%cf410\n",r);
+		else if(x==45)
+			fprintf(stdout,"%cf411\n",r);
+		else if(x==61)
+			fprintf(stdout,"%cf412\n",r);
+		
 		else if(x==65293)
 			fprintf(stdout,"%cs5\n",r);
 		else if(x==65506)
