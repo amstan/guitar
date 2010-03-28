@@ -10,10 +10,13 @@ all: $(SOURCES) $(EXECUTABLE)
 run: all
 	./$(EXECUTABLE)
 
-clean:
-	rm -f ${EXECUTABLE} ${OBJECTS}
+dbus:
+	dbus-binding-tool --mode=glib-server dbus-bindings.xml --prefix="guitarseq" > dbus-bindings.h
 
-$(EXECUTABLE): $(OBJECTS)
+clean:
+	rm -f ${EXECUTABLE} ${OBJECTS} dbus-bindings.h
+
+$(EXECUTABLE): dbus $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
 .c.o:
@@ -28,3 +31,6 @@ clean-doc:
 #cool stuff:
 runx: all
 	./emulated/emulated|./$(EXECUTABLE) -o -s
+
+test: all
+	./$(EXECUTABLE)</dev/null
