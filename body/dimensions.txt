@@ -1,0 +1,8 @@
+Button
+12mmx12mm
+
+Fret Width
+72mm
+
+Fret Spacing
+See the ods
