@@ -48,6 +48,8 @@ char fretboard[NO_STRINGS][NO_FRETS];
 //!Negative numbers makes stuff go flat, positive sharp and 0 stays the same.
 int transpose;
 
+int velocity=64;
+
 //misc functions
 void mute(char string) {
 	//mute string
@@ -188,7 +190,7 @@ int main(int narg, char **args) {
 					case 'n':
 						printf("p%d\n",p);
 						if(p)
-							pluck(s,last_frets[s]+tuning[s],64);
+							pluck(s,last_frets[s]+tuning[s],velocity);
 // 						else
 // 							mute(s);
 						break;
@@ -204,9 +206,9 @@ int main(int narg, char **args) {
 							if(k==-1) break; //don't play non assigned chord
 							if(chord[k][s]==-1) break; //don't play unplayable note
 								
-							pluck(s,chord[k][s],64);
+							pluck(s,chord[k][s],velocity);
 						} else {
-							//mute(s);
+						//	mute(s);
 						}
 						break;
 				}
@@ -227,6 +229,18 @@ int main(int narg, char **args) {
 				
 			case 'o':
 				//TODO
+				if(strlen(command)>5){
+					char delta=0;
+					if(command[6]=='1')
+						delta=-5;
+					if(command[6]=='4')
+						delta=+5;
+					velocity+=delta;
+					if(velocity<0) velocity=0;
+					if(velocity>127) velocity=127;
+					
+					printf("changing velocity by %d, now %d\n",delta,velocity);
+				}
 				break;
 				
 			default:

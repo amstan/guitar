@@ -1,0 +1,14 @@
+ADDING A CHORD
+
+To add a chord begin a newline and create your chord to the following pattern:
+ <chord symbol><tab><fingering position>
+
+The chord symbol consists of the text string representing the chord you wish to play for example the A sharp/B flat Suspended 2nd 4th chord would be symbolized as: A#sus2sus4
+
+The <tab> is simply the tab character, such that the parser may easily separate the chord symbol from the fingering of the chord.
+
+The chord fingering is a string consisting of the fret number of each string separated by a space. Each string must be given a fret or the parser will produce an error. Strings are in order from the low-E to the high-E. If a string is not to be played, indicate with with a hyphen. Example: For the E Major diminished 5th chord the fingering is written as such: - 7 8 9 9 - 
+
+EDITING A CHORD
+
+To edit a created chord symbology, simply change the fingering pattern following the rules illustrated in the "Adding a Chord" section. 
