@@ -19,9 +19,6 @@ written by Alex Stan
 #include "tuning.h"
 #include "chords.h"
 
-//#define CLIENT_NAME args_get('C',"guitar-seq")
-//#define MAX_EVENT_SIZE 10
-//#define RING_BUFFER_SIZE 10
 #define OUTPUT_EVENTS args_exists('o')
 
 //TODO: make this nicer
@@ -46,6 +43,7 @@ char fretboard[NO_STRINGS][NO_FRETS];
 
 //!This is the number to transpose by.
 //!Negative numbers makes stuff go flat, positive sharp and 0 stays the same.
+//!This is set from the config file
 int transpose;
 
 int velocity=64;
@@ -96,8 +94,6 @@ int init()
 {
 	fprintf(stdout,"Welcome to the Guitar Sequencer!\n made by Alex Stan\n\n");
 	
-	dbusTest();
-	
 	int status=0;
 	status += config_init("etc/config.ini");
 	status += notes_load(config_look("notes"));
@@ -124,10 +120,9 @@ int init()
 //*Main Function*//
 int main(int narg, char **args) {
 	args_init(narg,args);
+	if(init()) return 1;
 	
 	int i,j;
-	
-	if(init()) return 1;
 	
 	//clear some memory
 	for(i=0;i<NO_STRINGS;i++) {
