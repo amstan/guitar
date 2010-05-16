@@ -1,0 +1,15 @@
+Button
+12mmx12mm
+
+Fret Width
+72mm
+
+Fret Spacing
+See the ods
+
+Min Fret Height
+17.08mm
+clearance: 5.08mm
+
+Total Neck Height
+549.73mm
