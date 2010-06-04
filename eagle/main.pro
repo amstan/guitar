@@ -1,25 +1,25 @@
 EAGLE AutoRouter Statistics:
 
-Job           : /users/amstan/www/git/guitar/eagle/main.brd
+Job           : /home/alex/Projects/guitar/eagle/main.brd
 
-Start at      : 23:50:47 (22 Feb 2010)
-End at        : 23:51:17 (22 Feb 2010)
-Elapsed time  : 00:00:30
+Start at      : 22:18:02 (10-06-03)
+End at        : 22:18:03 (10-06-03)
+Elapsed time  : 00:00:00
 
-Signals       :    87   RoutingGrid: 10 mil  Layers: 2
-Connections   :   173   predefined:  0 ( 0 Vias )
+Signals       :    90   RoutingGrid: 10 mil  Layers: 2
+Connections   :   186   predefined:  186 ( 71 Vias )
 
-Router memory :   526816
+Router memory :   480480
 
-Passname          :    Busses     Route Optimize1 Optimize2 Optimize3 Optimize4
+Passname          :     Route Optimize1 Optimize2 Optimize3 Optimize4
 
-Time per pass     :  00:00:00  00:00:06  00:00:06  00:00:06  00:00:06  00:00:06
-Number of Ripups  :         0         0         0         0         0         0
-max. Level        :         0         1         0         0         0         0
-max. Total        :         0         0         0         0         0         0
+Time per pass     :  00:00:00  00:00:00  00:00:00  00:00:00  00:00:00
+Number of Ripups  :         0         0         0         0         0
+max. Level        :         0         0         0         0         0
+max. Total        :         0         0         0         0         0
 
-Routed            :        32       172       172       172       172       172
-Vias              :         0       227       136       107       101        93
-Resolution        :    18.5 %    99.4 %    99.4 %    99.4 %    99.4 %    99.4 %
+Routed            :         0         0         0         0         0
+Vias              :         0         0         0         0         0
+Resolution        :   100.0 %   100.0 %   100.0 %   100.0 %   100.0 %
 
-Final             : 99.4% finished
+Final             : 100.0% finished
