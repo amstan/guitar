@@ -10,7 +10,7 @@
 #include "main.h"
 
 
-FILE uart_str;
+FILE uart_str = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW); // This line is used to set up file access
 
 int prepare_ports() {
 	//String Touchpad
