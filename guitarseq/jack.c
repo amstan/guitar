@@ -53,6 +53,15 @@ int jack_init(char *name, char *connect_output) {
 		return 1;
 	}
 	
+	//initialize ringbuffer
+	ringbuffer = jack_ringbuffer_create(MAX_EVENT_SIZE*RING_BUFFER_SIZE);
+	if (!ringbuffer) {
+		fprintf(stderr,"Could not initialize ringbuffer.\n");
+		return 1;
+	}
+	jack_ringbuffer_reset(ringbuffer);
+	fprintf(stdout,"Ringbuffer initialized!\n");
+	
 	//jack port settings
 	jack_set_process_callback (jack_client, jack_process, 0);
 	output_port = jack_port_register (jack_client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsPhysical | JackPortIsTerminal | JackPortIsOutput, 0); //TODO: set proper terminal port output
@@ -63,16 +72,6 @@ int jack_init(char *name, char *connect_output) {
 		return 1;
 	}
 	fprintf(stdout,"Jack connection started!\n");
-	
-	
-	//initialize ringbuffer
-	ringbuffer = jack_ringbuffer_create(MAX_EVENT_SIZE*RING_BUFFER_SIZE);
-	if (!ringbuffer) {
-		fprintf(stderr,"Could not initialize ringbuffer.\n");
-		return 1;
-	}
-	jack_ringbuffer_reset(ringbuffer);
-	fprintf(stdout,"Ringbuffer initialized!\n");
 	
 	//connect to some other client
 	char **ports;
