@@ -11,7 +11,7 @@ FET = rf2500
 GDB = msp430-gdb
 GDBTUI = $(GDB)tui
 
-OBJS=$(PROG).o
+OBJS=ws2811.o $(PROG).o
 
 all: $(PROG).elf  $(PROG).lst
 	$(SIZE) $(PROG).elf
@@ -19,10 +19,13 @@ all: $(PROG).elf  $(PROG).lst
 .PHONY: all
 
 $(PROG).elf: $(OBJS)
-	$(CC) $(CFLAGS) -o $(PROG).elf $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(PROG).elf
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $<
+
+%.o: %.S
+	$(CC) $(CFLAGS) -c -x assembler-with-cpp $<
 
 %.lst: %.elf
 	$(OBJDUMP) -DS $< >$@
