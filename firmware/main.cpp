@@ -17,12 +17,14 @@ void chip_init(void) {
 	set_bit(P1DIR,LED_2);
 }
 
-void write_ws2811_hs(uint8_t *data, uint16_t length, uint8_t pinmask);
+extern "C" {
+	void write_ws2811_hs(uint8_t *data, uint16_t length, uint8_t pinmask);
+}
 
 int main(void) {
 	chip_init();
 	
-	uint8_t data[]={255,255,255};
+	uint8_t data[]={0x20,0x20,0x20};
 	uint16_t length=3;
 	write_ws2811_hs(data,length,1<<LED_RGB);
 	
