@@ -35,15 +35,14 @@ void chip_init(void) {
 	
 	__bis_SR_register(GIE); //interrupts enabled
 	
-	#define BIG 5
-// 	set_bit(P2REN,BIG);
-// 	clear_bit(P2SEL,BIG);
-// 	set_bit(P2SEL2,BIG);
-	
-// 	set_bit(P2IE,BIG);
-	
 	#define LED_CENTER 0
 	set_bit(P1DIR,LED_CENTER);
+	
+	#define LED_RGB 0
+	set_bit(P1DIR,LED_RGB);
+	
+	#define LED_2 6
+	set_bit(P1DIR,LED_2);
 }
 
 void printint(unsigned int i) {
@@ -86,17 +85,66 @@ uint16_t read_touch(unsigned int pin) {
 	return count;
 }
 
+extern "C" {
+	void write_ws2811_hs(uint8_t *data, uint16_t length, uint8_t pinmask);
+}
+
 int main(void) {
 	chip_init();
 	
-	clear_bit(P1OUT,LED_CENTER);
+	#define G 0
+	#define R 1
+	#define B 2
+	uint8_t data[]={0x00,0x00,0x00};
+	uint16_t length=3;
 	
+	unsigned char offset=0;
 	while(1) {
+		#define PROXIMITY 0
+		#define LEFT 1
+		#define DOWN 2
+		#define RIGHT 3
+		#define UP 4
+		#define CENTER 5
 		for(unsigned int i=0;i<6;i++) {
-			printint(read_touch(i));
+			int value=read_touch(i);
+			switch(i) {
+				case LEFT:
+					value=-(value-3680);
+					value+=offset;
+					if(value<0) value=0;
+					if(value>255) value=255;
+					data[R]=value;
+					break;
+				
+				case UP:
+					value=-(value-3450);
+					value+=offset;
+					if(value<0) value=0;
+					if(value>255) value=255;
+					data[G]=value;
+					break;
+				
+				case RIGHT:
+					value=-(value-3700);
+					value+=offset;
+					if(value<0) value=0;
+					if(value>255) value=255;
+					data[B]=value;
+					break;
+				
+				case DOWN:
+					value=-(value-3720);
+					if(value<0) value=0;
+					if(value>255) value=255;
+					offset=value;
+					break;
+			}
+			printint(value);
 			usci0.xmit(" ");
 		}
 		usci0.xmit("\n");
+		write_ws2811_hs(data,length,1<<LED_RGB);
 	}
 }
 
@@ -104,5 +152,4 @@ int main(void) {
 __interrupt void watchdog_timer(void) {
 	TA0CCTL1 ^= CCIS0;                   // Create SW capture of CCR1
 	__bic_SR_register_on_exit(LPM3_bits);           // Exit LPM3 on reti
-	
 }
