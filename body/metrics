@@ -1,0 +1,24 @@
+#Guitar metrics
+##Inspiration metrics
+###Frets
+* 25 count
+* 11.5mm height min
+* 70.5mm height max
+* 50mm width
+
+##My guitar(fender stratocaster clone)
+###Frets
+* 22 count
+* 11mm height min
+* 37mm height max
+* 48cm long
+* 42-55mm width
+
+##MIDI guitar
+###Misc
+* Average fingers can be considered as an ellipse 10mm * 17mm
+* the RGB leds are 5mm * 5mm
+
+###Frets
+* 20 count
+* 60mm constant width
