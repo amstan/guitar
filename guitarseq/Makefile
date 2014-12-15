@@ -22,7 +22,7 @@ CFLAGS = $(JACK_CFLAGS) -O3 -Wall
 LDFLAGS = $(JACK_LIBS)
 
 libguitarseq.so: process.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -shared -fPIC $^ -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -shared -fPIC -g $^ -o $@
 
 .PHONY: clean
 clean:
@@ -33,4 +33,4 @@ clean:
 
 .PHONY: run
 run: all
-	python2 -i main.py
+	python2 -i guitarseq.py
