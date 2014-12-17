@@ -2,62 +2,92 @@
 #include <jack/midiport.h>
 #include <jack/ringbuffer.h>
 
+#include <string.h>
 #include <stdio.h>
 
-jack_client_t *jack_client = NULL;
-jack_port_t *output_port = NULL;
-jack_ringbuffer_t *outgoing_ringbuffer = NULL;
+struct guitarseq {
+	jack_client_t *jack_client;
 
-#define MIDI_EVENT_SIZE 3
+	char *_c_logging_buffer;
+	size_t _c_logging_buffer_size;
+	//These will be slow, they're python
+	void (* _c_error_callback)(const char *msg);
+	void (* _c_info_callback)(const char *msg);
 
-int process(jack_nframes_t nframes, void *arg) {
-	if (!jack_client)
-		return 0;
-	if (!output_port)
-		return 0;
-	if (!outgoing_ringbuffer)
-		return 0;
-	
-	jack_nframes_t time, offset;
-	char size;
-	unsigned char* buffer;
-	
-	void* port_buf = jack_port_get_buffer(output_port, nframes);
+	jack_port_t *out_port;
+	jack_ringbuffer_t *out_buffer;
+
+	jack_port_t *in_port;
+	jack_ringbuffer_t *in_buffer;
+};
+
+#define INFO(...)  {snprintf(guitarseq->_c_logging_buffer, guitarseq->_c_logging_buffer_size, __VA_ARGS__); guitarseq->_c_info_callback(guitarseq->_c_logging_buffer);}
+#define ERROR(...) {snprintf(guitarseq->_c_logging_buffer, guitarseq->_c_logging_buffer_size, __VA_ARGS__); guitarseq->_c_error_callback(guitarseq->_c_logging_buffer);}
+
+int process(jack_nframes_t nframes, struct guitarseq *guitarseq) {
+	if(!guitarseq) {
+		printf("No guitarseq instance!\n");
+		return 1;
+	}
+
+	void* port_buf;
+	jack_nframes_t now = jack_frame_time (guitarseq->jack_client);
+
+	//Output
+	port_buf = jack_port_get_buffer(guitarseq->out_port, nframes);
 	jack_midi_clear_buffer(port_buf);
-	
-	jack_nframes_t now = jack_frame_time (jack_client);
-	
-// 	while (jack_ringbuffer_read (outgoing_ringbuffer, &size, 1)) {
-// 		printf("%02x\n",size);
-// 	}
-	
-	while (jack_ringbuffer_read (outgoing_ringbuffer, (char*)&time, sizeof(time))) {
-// 		if (time >= now) { // from the future
-// 			break;
-// 		}
-		
+	while (1) {
+		jack_nframes_t time;
+		//TODO: Do a safer read, in case only part of the message is here
+		if (!jack_ringbuffer_read (guitarseq->out_buffer, (char *)&time, sizeof(time))) {
+			break;
+		}
+
+		// from the future?
+		if (time >= now) {
+			break;
+		}
+
 		// time it right
-		offset = time - now + nframes - 1;
-		
+		jack_nframes_t offset = time - now + nframes - 1;
+
 		// get the size of the event
-		jack_ringbuffer_read(outgoing_ringbuffer, (char *)&size, sizeof(size));
-		
-// 		printf("event at %d%+d size %d\n", now, offset, size);
-		
+		size_t size;
+		jack_ringbuffer_read(guitarseq->out_buffer, (char *)&size, sizeof(size));
+
+		INFO("out event at %d%+d size %d\n", now, offset, size);
+
 		if (offset > nframes)
 			// from the past, somehow. cram it in at the front
 			offset = 0;
-		
-		//proceed to giving it to jack
-		buffer = jack_midi_event_reserve (port_buf, offset, size);
+
+		// proceed to giving it to jack
+		jack_midi_data_t *buffer = jack_midi_event_reserve (port_buf, offset, size);
 		if(buffer) {
-			jack_ringbuffer_read (outgoing_ringbuffer, (char *)buffer, size);
+			jack_ringbuffer_read(guitarseq->out_buffer, (char *)buffer, size);
 		} else {
 			// throw it away :( TODO: find more
-			jack_ringbuffer_read_advance (outgoing_ringbuffer, size);
-			printf("threw away MIDI event - no space reserved at time %d offset %d\n",time,offset);
+			jack_ringbuffer_read_advance (guitarseq->out_buffer, size);
+			ERROR("threw away MIDI event - no space reserved at time %d offset %d\n",time,offset);
 		}
 	}
-	
+
+	// 	Input
+	port_buf = jack_port_get_buffer(guitarseq->in_port, nframes);
+	jack_nframes_t event_count = jack_midi_get_event_count(port_buf);
+	for(jack_nframes_t i=0; i<event_count; i++) {
+		jack_midi_event_t in_event;
+		jack_midi_event_get(&in_event, port_buf, i);
+
+		//adds a note to the ringbuffer
+		if (jack_ringbuffer_write_space(guitarseq->in_buffer) >= sizeof(in_event.time)+sizeof(in_event.size)+in_event.size) {
+			jack_ringbuffer_write(guitarseq->in_buffer, (char *)&in_event.time, sizeof(in_event.time));
+			jack_ringbuffer_write(guitarseq->in_buffer, (char *)&in_event.size, sizeof(in_event.size));
+			jack_ringbuffer_write(guitarseq->in_buffer, (char *)in_event.buffer, in_event.size);
+		} else {
+			ERROR("Couldn't write to ringbuffer at %d, %d midi data bytes lost\n", in_event.time, in_event.size);
+		}
+	}
+
 	return 0;
 }

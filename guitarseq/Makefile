@@ -18,10 +18,12 @@ libjack/__init__.py: $(JACK_BINDINGS) libjack/__init__.footer.py
 	cat libjack/__init__.footer.py >> $@
 
 CC = gcc
-CFLAGS = $(JACK_CFLAGS) -O3 -Wall
+CFLAGS = $(JACK_CFLAGS) -O3 -Wall -std=gnu99
 LDFLAGS = $(JACK_LIBS)
 
-libguitarseq.so: process.c
+LIBGUITARSEQ_FILES = process.c
+
+libguitarseq.so: $(LIBGUITARSEQ_FILES)
 	$(CC) $(CFLAGS) $(LDFLAGS) -shared -fPIC -g $^ -o $@
 
 .PHONY: clean

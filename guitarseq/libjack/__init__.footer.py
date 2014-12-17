@@ -6,7 +6,10 @@ from jack import *
 libraries=[value for name,value in globals().items() if not name.startswith("__")]
 import ctypes
 
+#fix stupid String
 ringbuffer.jack_ringbuffer_write.argtypes = [ctypes.POINTER(ringbuffer.jack_ringbuffer_t), ctypes.POINTER(ctypes.c_char), ctypes.c_size_t]
+ringbuffer.jack_ringbuffer_read.argtypes = [ctypes.POINTER(ringbuffer.jack_ringbuffer_t), ctypes.POINTER(ctypes.c_char), ctypes.c_size_t]
+ringbuffer.jack_ringbuffer_peek.argtypes = [ctypes.POINTER(ringbuffer.jack_ringbuffer_t), ctypes.POINTER(ctypes.c_char), ctypes.c_size_t]
 
 class JackError(IOError):
 	pass
@@ -21,8 +24,7 @@ def null_error(result, func, arguments):
 		raise JackError("%s(%s) returned NULL." % (func.name, arguments))
 	return result
 
-#__dict__.update(jack.__dict__)
-d={}
+monkey_patches={}
 for library in libraries:
 	#print "####", library
 	for name in dir(library):
@@ -37,4 +39,5 @@ for library in libraries:
 		if repr(func.restype).find("struct") != -1:
 			func.errcheck = null_error
 		
-		d[name]=func
+		#record what we did
+		monkey_patches[name] = (func,func.errcheck)
