@@ -129,9 +129,16 @@ class JackInterface(struct_guitarseq):
 			libjack.ringbuffer.jack_ringbuffer_write(self.out_buffer, ctypes.byref(ctypes.c_ubyte(element)), 1)
 
 	def jack_get_ports(self, port_name_pattern = "", type_name_pattern = "", flags = 0):
-		ret = libjack.jack_get_ports(self.jack_client, port_name_pattern, type_name_pattern, flags)
-		return ret
-		#TODO still broken
+		ports = libjack.jack_get_ports(self.jack_client, port_name_pattern, type_name_pattern, flags)
+		try:
+			for port in ports:
+				if not port:
+					break
+				yield ctypes.string_at(port)
+			libjack.jack_free(ports)
+		except ValueError:
+			raise StopIteration()
+
 
 	def note(self, on=True, note=64, velocity=64):
 		self.out_event(0x80 + 0x10*bool(on), note, velocity)
