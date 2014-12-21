@@ -5,6 +5,10 @@ from __future__ import print_function
 import jack
 import cffi
 import os
+import sys
+
+if sys.version_info[0] == 2:
+	bytes = list
 
 #load libguitarseq
 _libguitarseq_so_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "libguitarseq.so")
@@ -37,16 +41,16 @@ class GuitarSeq(object):
 		self._struct.logging_buffer = _ffi.new("char[]", self._struct.logging_buffer_size)
 
 		#Output port
-		self.out_port = self.jack_client.outports.register("midi_in", is_terminal = True, is_physical = True, is_midi = True)
+		self.out_port = self.jack_client.outports.register("midi_out", is_terminal = True, is_physical = True, is_midi = True)
 		self._struct.out_port = self.out_port._ptr
-		#self.out_buffer = libjack.ringbuffer.jack_ringbuffer_create(ringbuffer_size)
-		#libjack.ringbuffer.jack_ringbuffer_reset(self.out_buffer)
+		self.out_buffer = jack.RingBuffer(ringbuffer_size)
+		self._struct.out_buffer = self.out_buffer._ptr
 
 		#Input port
-		self.in_port = self.jack_client.inports.register("midi_out", is_terminal = True, is_physical = True, is_midi = True)
+		self.in_port = self.jack_client.inports.register("midi_in", is_terminal = True, is_physical = True, is_midi = True)
 		self._struct.in_port = self.in_port._ptr
-		#self.in_buffer = libjack.ringbuffer.jack_ringbuffer_create(ringbuffer_size)
-		#libjack.ringbuffer.jack_ringbuffer_reset(self.in_buffer)
+		self.in_buffer = jack.RingBuffer(ringbuffer_size)
+		self._struct.in_buffer = self.in_buffer._ptr
 
 		self.jack_client.set_process_callback(_libguitarseq.process, userdata=self._struct_ptr)
 
@@ -57,83 +61,68 @@ class GuitarSeq(object):
 	def info(self, msg):
 		print(msg, end="")
 
-	#def out_event(self,*data):
-		#time = libjack.jack_frame_time(self.jack_client)
+	def out_event(self,*data):
+		data = bytes(data)
 
-		#space_left = libjack.ringbuffer.jack_ringbuffer_write_space(self.out_buffer)
-		#space_needed = ctypes.sizeof(libjack.types.jack_nframes_t) + 1 + len(data)
-		#if space_left < space_needed:
-			#pass
-			##TODO: find out why i can't make this a wait loop
-			##raise Exception("No space left in ringbuffer")
+		time = _ffi.new("jack_nframes_t[1]")
+		time[0] = self.jack_client.frame_time
+		size = _ffi.new("size_t[1]")
+		size[0] = len(data)
 
-		#libjack.ringbuffer.jack_ringbuffer_write(self.out_buffer, ctypes.byref(libjack.types.jack_nframes_t(time)), ctypes.sizeof(libjack.types.jack_nframes_t))
-		#libjack.ringbuffer.jack_ringbuffer_write(self.out_buffer, ctypes.byref(ctypes.c_size_t(len(data))), ctypes.sizeof(ctypes.c_size_t))
-		#for element in data:
-			#libjack.ringbuffer.jack_ringbuffer_write(self.out_buffer, ctypes.byref(ctypes.c_ubyte(element)), 1)
+		space_left = self.out_buffer.write_space
+		space_needed = _ffi.sizeof(time) + _ffi.sizeof(size) + len(data)
+		if space_left < space_needed:
+			pass
+			#TODO: find out why i can't make this a wait loop
+			#raise Exception("No space left in ringbuffer")
 
-	#def jack_get_ports(self, port_name_pattern = "", type_name_pattern = "", flags = 0):
-		#ports = libjack.jack_get_ports(self.jack_client, port_name_pattern, type_name_pattern, flags)
-		#try:
-			#for port in ports:
-				#if not port:
-					#break
-				#yield ctypes.string_at(port)
-			#libjack.jack_free(ports)
-		#except ValueError:
-			#raise StopIteration()
+		self.out_buffer.write(time)
+		self.out_buffer.write(size)
+		self.out_buffer.write(data)
 
+	def note(self, on=True, note=64, velocity=64):
+		self.out_event(0x80 + 0x10*bool(on), note, velocity)
 
-	#def note(self, on=True, note=64, velocity=64):
-		#self.out_event(0x80 + 0x10*bool(on), note, velocity)
+	def get_event(self):
+		if self.in_buffer.read_space < (_ffi.sizeof("jack_nframes_t") + _ffi.sizeof("size_t")):
+			return None
 
-	#def get_event(self):
-		#ctypes.sizeof(libjack.types.jack_nframes_t)
-
-		#time = libjack.types.jack_nframes_t()
-		#size = ctypes.c_size_t()
-
-		#if libjack.ringbuffer.jack_ringbuffer_read_space(self.in_buffer) < (ctypes.sizeof(time) + ctypes.sizeof(size)):
-			#return None
-
-		#libjack.ringbuffer.jack_ringbuffer_read(self.in_buffer, ctypes.byref(time), ctypes.sizeof(time))
-		#libjack.ringbuffer.jack_ringbuffer_read(self.in_buffer, ctypes.byref(size), ctypes.sizeof(size))
-		#time = time.value
-		#size = size.value
-
-		##TODO: Do a safer read, in case only part of the message is here
-		#while libjack.ringbuffer.jack_ringbuffer_read_space(self.in_buffer) < size:
-			#print("Empty")
-
-		#buf = (ctypes.c_ubyte * size)()
-		#libjack.ringbuffer.jack_ringbuffer_read(self.in_buffer, ctypes.byref(buf), size)
-
-		#return time, size, list(buf)
+		time = _ffi.cast("jack_nframes_t[1]", self.in_buffer._read(_ffi.sizeof("jack_nframes_t"))[1])[0]
+		size = _ffi.cast("size_t[1]", self.in_buffer._read(_ffi.sizeof("size_t"))[1])[0]
+		return time,self.in_buffer.read(size)
 
 if __name__=="__main__":
 	self=GuitarSeq()
 
-	#import notes
-	#while 1:
-		#ret = self.get_event()
-		#if ret is not None:
-			#print(ret, notes.Note(ret[2][1]))
+	try:
+		print("Print all input events")
+		import notes
+		while 1:
+			ret = self.get_event()
+			if ret is not None:
+				time, data = ret
+				data = list(data)
+				try:
+					(command, velocity, note_id) = data
+					print(time, (command, velocity, note_id), notes.Note(note_id))
+				except Exception:
+					print(time, data)
+	except KeyboardInterrupt:
+		pass
 
-	#self.get_byte()
-	#self.out_event(*([1]*10))
-	#ret = self.jack_get_ports()
+	import time
+	import random
 
-	#import time
-	#import random
+	intervals = [3,4,3,2,3,4,3,2,3,4,3,2]
+	start = 64
+	scale = [add+start for add in map(sum,[intervals[0:i+1] for i in range(len(intervals))])]
 
-	#intervals = [3,4,3,2,3,4,3,2,3,4,3,2]
-	#start = 64
-	#scale = [add+start for add in map(sum,[intervals[0:i+1] for i in range(len(intervals))])]
+	print("Random notes from a scale: %r" % list(map(notes.Note,scale)))
 
-	#while 1:
-		#for note in scale:
-			#note = random.choice(scale)
-			#self.note(True,note)
-			#time.sleep(random.gauss(0.5,0.01))
-			#self.note(False,note)
-			#time.sleep(random.gauss(0.1,0.01))
+	while 1:
+		for note in scale:
+			note = random.choice(scale)
+			self.note(True,note)
+			time.sleep(random.gauss(0.5,0.01))
+			self.note(False,note)
+			time.sleep(random.gauss(0.1,0.01))
