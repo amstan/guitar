@@ -36,3 +36,9 @@ clean:
 .PHONY: run
 run: all
 	python2 -i guitarseq.py
+
+test.h: Makefile
+	gcc -E /usr/include/jack/jack.h -I. > test.h
+
+test: test.h
+	./test_ffi.py
