@@ -124,7 +124,7 @@ if __name__ == '__main__':
 	window = KeyCaptureWindow()
 	window.show()
 
-	i=JackInterface()
+	i=GuitarSeq()
 
 	fix_ctrlc(app)
 	sys.exit(app.exec_())

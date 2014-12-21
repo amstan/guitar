@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 import math
 import collections
 
@@ -55,4 +55,4 @@ for i in range(128):
 
 if __name__=="__main__":
 	for note in notes.values():
-		print "%d\t%r\t%f" % (note.id, note, note.frequency)
+		print("%d\t%r\t%f" % (note.id, note, note.frequency))

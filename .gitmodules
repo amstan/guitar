@@ -1,0 +1,4 @@
+[submodule "guitarseq/jackclient-python"]
+	path = guitarseq/jackclient-python
+	url = git@github.com:amstan/jackclient-python.git
+	branch = master
