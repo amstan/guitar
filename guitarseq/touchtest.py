@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import sys
 import time
@@ -86,11 +86,11 @@ def calculate_last_frets(fret_bitmap):
 	return [
 		max(
 			((fret_id, fret_value) for fret_id, fret_value in list(enumerate(string)) + [(-1,True)] if fret_value),
-			key=lambda (fret_id,fret_value): fret_id
+			key=lambda *args: args[0]
 		)[0] for string in fret_bitmap]
 
 def enqueue(command):
-	print command
+	print(command)
 	global last_frets
 
 	pressed = command[0] == 'p'
@@ -105,6 +105,7 @@ def enqueue(command):
 		if last_played[string] != None:
 			#mute string
 			i.note(False, last_played[string].id)
+			last_played[string] = None
 
 	elif command_type == 's':
 		if pressed:

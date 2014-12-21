@@ -22,7 +22,7 @@ class Note(object):
 		return "Note('%s')" % (self)
 	
 	def __str__(self):
-		return "%s%s" % (_octave[self.id % 12], self.id / 12 - 1)
+		return "%s%s" % (_octave[self.id % 12], self.id // 12 - 1)
 	
 	def __add__(self,other):
 		try:
