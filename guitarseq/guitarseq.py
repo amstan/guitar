@@ -28,10 +28,8 @@ class GuitarSeq(object):
 		self._struct.jack_client = self.jack_client._ptr
 
 		#c logging
-		jack.set_info_function(self.info)
-		jack.set_error_function(self.error)
-		self._struct.error_callback = jack._callback_ptrs[jack._lib.jack_set_error_function]
-		self._struct.info_callback = jack._callback_ptrs[jack._lib.jack_set_info_function]
+		self._struct.error_callback = jack.set_error_function(self.error)
+		self._struct.info_callback = jack.set_info_function(self.info)
 		self._struct.logging_buffer_size = 256
 		self._struct.logging_buffer = _ffi.new("char[]", self._struct.logging_buffer_size)
 
