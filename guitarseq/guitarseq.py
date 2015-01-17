@@ -49,6 +49,16 @@ class GuitarSeq(object):
 
 		self.jack_client.activate()
 
+		try:
+			self.out_port.connect(self.jack_client.get_ports(sys.argv[1])[0])
+		except IndexError:
+			print("Not connecting output port")
+
+		try:
+			self.in_port.connect(self.jack_client.get_ports(sys.argv[2])[0])
+		except IndexError:
+			print("Not connecting input port")
+
 	def error(self, msg):
 		print("Error:", msg, end="")
 	def info(self, msg):
