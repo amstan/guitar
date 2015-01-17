@@ -76,7 +76,6 @@ FRET_COUNT = 19
 STRING_COUNT = 6
 
 fret_bitmap = []
-last_frets = []
 for string in range(STRING_COUNT):
 	fret_bitmap.append([False] * FRET_COUNT)
 last_frets = [-1] * STRING_COUNT
@@ -100,12 +99,15 @@ def enqueue(command):
 	if command_type == 'f':
 		fret = int(command[3:])
 		fret_bitmap[string][fret] = pressed
+		print(last_frets, fret)
+		last_played_fret = last_frets[string]
 		last_frets = calculate_last_frets(fret_bitmap)
 
 		if last_played[string] != None:
-			#mute string
-			i.note(False, last_played[string].id)
-			last_played[string] = None
+			if fret >= last_played_fret:
+				#mute string
+				i.note(False, last_played[string].id)
+				last_played[string] = None
 
 	elif command_type == 's':
 		if pressed:
