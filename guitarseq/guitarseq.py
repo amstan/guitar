@@ -36,13 +36,13 @@ class GuitarSeq(object):
 		self._struct.logging_buffer = _ffi.new("char[]", self._struct.logging_buffer_size)
 
 		#Output port
-		self.out_port = self.jack_client.outports.register("midi_out", is_terminal = True, is_physical = True, is_midi = True)
+		self.out_port = self.jack_client.midi_outports.register("midi_out", is_terminal = True, is_physical = True)
 		self._struct.out_port = self.out_port._ptr
 		self.out_buffer = jack.RingBuffer(ringbuffer_size)
 		self._struct.out_buffer = self.out_buffer._ptr
 
 		#Input port
-		self.in_port = self.jack_client.inports.register("midi_in", is_terminal = True, is_physical = True, is_midi = True)
+		self.in_port = self.jack_client.midi_inports.register("midi_in", is_terminal = True, is_physical = True)
 		self._struct.in_port = self.in_port._ptr
 		self.in_buffer = jack.RingBuffer(ringbuffer_size)
 		self._struct.in_buffer = self.in_buffer._ptr
