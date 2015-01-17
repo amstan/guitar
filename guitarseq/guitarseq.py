@@ -1,14 +1,9 @@
-#!/usr/bin/env python
-
-from __future__ import print_function
+#!/usr/bin/env python3
 
 import jack
 import cffi
 import os
 import sys
-
-if sys.version_info[0] == 2:
-	bytes = list
 
 #load libguitarseq
 _libguitarseq_so_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "libguitarseq.so")
