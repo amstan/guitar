@@ -21,4 +21,4 @@ clean:
 
 .PHONY: run
 run: all
-	python -i guitarseq.py
+	python -i guitarseq.py jack-keyboard:midi_in
