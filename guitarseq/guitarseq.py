@@ -87,11 +87,11 @@ class GuitarSeq(object):
 		return time,self.in_buffer.read(size)
 
 if __name__=="__main__":
+	import notes
 	self=GuitarSeq()
-
+	
 	try:
 		print("Print all input events")
-		import notes
 		while 1:
 			ret = self.get_event()
 			if ret is not None:
