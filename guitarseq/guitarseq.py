@@ -109,8 +109,8 @@ if __name__=="__main__":
 				time, data = ret
 				data = list(data)
 				try:
-					(command, velocity, note_id) = data
-					print(time, (command, velocity, note_id), notes.Note(note_id))
+					(command, note_id, velocity) = data
+					print(time, (command, note_id, velocity), notes.Note(note_id))
 				except Exception:
 					print(time, data)
 	except KeyboardInterrupt:
