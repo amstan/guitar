@@ -61,9 +61,11 @@ class GuitarSeq(object):
 			print("Not connecting input port")
 
 	def error(self, msg):
-		print("Error:", msg, end="")
+		print("Error: %s" % msg, end="")
+		sys.stdout.flush()
 	def info(self, msg):
-		print(msg, end="")
+		print("%s" % msg, end="")
+		sys.stdout.flush()
 
 	def out_event(self,*data):
 		data = bytes(data)
