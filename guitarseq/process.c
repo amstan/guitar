@@ -5,13 +5,13 @@
 #include <string.h>
 #include <stdio.h>
 
-#define CALLBACK_ARG struct guitarseq *guitarseq
 #include "guitarseq.cffi.h"
 
 #define INFO(...)  {snprintf(guitarseq->logging_buffer, guitarseq->logging_buffer_size, __VA_ARGS__); guitarseq->info_callback(guitarseq->logging_buffer);}
 #define ERROR(...) {snprintf(guitarseq->logging_buffer, guitarseq->logging_buffer_size, __VA_ARGS__); guitarseq->error_callback(guitarseq->logging_buffer);}
 
-int process(jack_nframes_t nframes, struct guitarseq *guitarseq) {
+int process(jack_nframes_t nframes, void *arg) {
+	struct guitarseq *guitarseq = arg;
 	if(!guitarseq) {
 		printf("No guitarseq instance!\n");
 		return 1;

@@ -10,7 +10,7 @@ _libguitarseq_so_file = os.path.join(os.path.dirname(os.path.realpath(__file__))
 _guitarseq_cffi_h = os.path.join(os.path.dirname(os.path.realpath(__file__)), "guitarseq.cffi.h")
 _ffi = cffi.FFI()
 _ffi.include(jack._ffi)
-_ffi.cdef(open(_guitarseq_cffi_h).read().replace("CALLBACK_ARG", "void *"))
+_ffi.cdef(open(_guitarseq_cffi_h).read())
 ##Broken due to gcc being passed the full path to _libguitarseq_so_file
 #_lib_guitarseq = _ffi.verify(
 	#jack._verify_includes + "\n#include \"%s\"" % (_guitarseq_cffi_h),
