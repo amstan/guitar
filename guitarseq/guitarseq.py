@@ -5,22 +5,32 @@ import cffi
 import os
 import sys
 
+import notes
+
 #load libguitarseq
 _libguitarseq_so_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "libguitarseq.so")
 _guitarseq_cffi_h = os.path.join(os.path.dirname(os.path.realpath(__file__)), "guitarseq.cffi.h")
 _ffi = cffi.FFI()
 _ffi.include(jack._ffi)
 _ffi.cdef(open(_guitarseq_cffi_h).read())
-##Broken due to gcc being passed the full path to _libguitarseq_so_file
-#_lib_guitarseq = _ffi.verify(
-	#jack._verify_includes + "\n#include \"%s\"" % (_guitarseq_cffi_h),
-	#libraries = [_libguitarseq_so_file]
-#)
 _libguitarseq = _ffi.dlopen(_libguitarseq_so_file)
 
 class GuitarSeq(object):
-	def __init__(self, name = "guitarseq", ringbuffer_size = 100):
-		self.jack_client = jack.Client(name)
+	tuning = [notes.Note(name) for name in "E2 A2 D3 G3 B3 E4".split(" ")]
+	fret_count = 19
+	string_count = 6
+
+	def __init__(self):
+		self.setup_jack()
+
+		self.fret_bitmap = []
+		for string in range(self.string_count):
+			self.fret_bitmap.append([False] * self.fret_count)
+		self.recalculate_active_frets()
+		self.last_played = [None] * self.string_count
+
+	def setup_jack(self):
+		self.jack_client = jack.Client("guitarseq")
 
 		#struct guitarseq
 		self._struct_ptr = _ffi.new("struct guitarseq[1]")
@@ -37,28 +47,18 @@ class GuitarSeq(object):
 		#Output port
 		self.out_port = self.jack_client.midi_outports.register("midi_out", is_terminal = True, is_physical = True)
 		self._struct.out_port = self.out_port._ptr
-		self.out_buffer = jack.RingBuffer(ringbuffer_size)
+		self.out_buffer = jack.RingBuffer(256)
 		self._struct.out_buffer = self.out_buffer._ptr
 
 		#Input port
 		self.in_port = self.jack_client.midi_inports.register("midi_in", is_terminal = True, is_physical = True)
 		self._struct.in_port = self.in_port._ptr
-		self.in_buffer = jack.RingBuffer(ringbuffer_size)
+		self.in_buffer = jack.RingBuffer(4096)
 		self._struct.in_buffer = self.in_buffer._ptr
 
 		self.jack_client.set_process_callback(_libguitarseq.process, userdata=self._struct_ptr)
 
 		self.jack_client.activate()
-
-		try:
-			self.out_port.connect(self.jack_client.get_ports(sys.argv[1])[0])
-		except IndexError:
-			print("Not connecting output port")
-
-		try:
-			self.in_port.connect(self.jack_client.get_ports(sys.argv[2])[0])
-		except IndexError:
-			print("Not connecting input port")
 
 	def error(self, msg):
 		print("Error: %s" % msg, end="")
@@ -89,13 +89,50 @@ class GuitarSeq(object):
 	def note(self, on=True, note=64, velocity=64):
 		self.out_event(0x80 + 0x10*bool(on), note, velocity)
 
-	def get_event(self):
+	def get_midi_in_event(self):
 		if self.in_buffer.read_space < (_ffi.sizeof("jack_nframes_t") + _ffi.sizeof("size_t")):
 			return None
 
 		time = _ffi.cast("jack_nframes_t[1]", self.in_buffer._read(_ffi.sizeof("jack_nframes_t"))[1])[0]
 		size = _ffi.cast("size_t[1]", self.in_buffer._read(_ffi.sizeof("size_t"))[1])[0]
-		return time,self.in_buffer.read(size)
+		return time, tuple(self.in_buffer.read(size))
+
+	def recalculate_active_frets(self):
+		self.active_frets = [
+			max(
+				((fret_id, fret_value) for fret_id, fret_value in list(enumerate(string)) + [(-1,True)] if fret_value),
+				key=lambda *args: args[0]
+			)[0] for string in self.fret_bitmap
+		]
+
+	def on_guitar_event(self, event):
+		print(event)
+
+		pressed = event[0] == 'p'
+		event_type = event[1]
+		string = int(event[2])
+
+		if event_type == 'f':
+			fret = int(event[3:])
+			self.fret_bitmap[string][fret] = pressed
+			last_played_fret = self.active_frets[string]
+			self.recalculate_active_frets()
+
+			if self.last_played[string] != None:
+				if fret >= last_played_fret:
+					#mute string
+					self.note(False, self.last_played[string].id)
+					self.last_played[string] = None
+
+		elif event_type == 's':
+			if pressed:
+				if self.last_played[string] != None:
+					#mute string
+					self.note(False, self.last_played[string].id)
+			else: #released
+				note = self.tuning[string] + self.active_frets[string] + 1
+				self.last_played[string] = note
+				self.note(True, note.id)
 
 if __name__=="__main__":
 	import notes
@@ -104,13 +141,12 @@ if __name__=="__main__":
 	try:
 		print("Print all input events")
 		while 1:
-			ret = self.get_event()
+			ret = self.get_midi_in_event()
 			if ret is not None:
 				time, data = ret
-				data = list(data)
 				try:
 					(command, note_id, velocity) = data
-					print(time, (command, note_id, velocity), notes.Note(note_id))
+					print(time, (hex(command), note_id, velocity), notes.Note(note_id))
 				except Exception:
 					print(time, data)
 	except KeyboardInterrupt:

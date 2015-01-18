@@ -17,60 +17,6 @@ def fix_ctrlc(app):
 	import signal
 	signal.signal(signal.SIGINT,lambda *args:app.quit())
 
-class KeyCaptureWindow(QWidget):
-	strum_delay_ms = 0.015
-
-	def keyPressEvent(self, event):
-		self.keyEvent(event, True)
-	def keyReleaseEvent(self, event):
-		self.keyEvent(event, False)
-
-	def keyEvent(self, event, pressed):
-		event.accept()
-
-		if event.isAutoRepeat():
-			return
-
-		code = event.nativeScanCode()
-		pressed="rp"[pressed]
-
-		#frets
-		if code in range(67, 76 + 1):
-			fret = code - 67
-			enqueue("%sf5%d" % (pressed, fret))
-		elif code in range(10, 21 + 1):
-			fret = code - 10
-			enqueue("%sf4%d" % (pressed, fret))
-		elif code in range(24, 35 + 1):
-			fret = code - 24
-			enqueue("%sf3%d" % (pressed, fret))
-		elif code in range(38, 48 + 1):
-			fret = code - 38
-			enqueue("%sf2%d" % (pressed, fret)); time.sleep(self.strum_delay_ms)
-			enqueue("%sf1%d" % (pressed, fret)); time.sleep(self.strum_delay_ms)
-			enqueue("%sf0%d" % (pressed, fret))
-
-		#strings
-		elif code == 96:
-			enqueue("%ss5" % (pressed,))
-		elif code == 22:
-			enqueue("%ss4" % (pressed,))
-		elif code == 51:
-			enqueue("%ss3" % (pressed,))
-		elif code == 36:
-			enqueue("%ss2" % (pressed,)); time.sleep(self.strum_delay_ms)
-			enqueue("%ss1" % (pressed,)); time.sleep(self.strum_delay_ms)
-			enqueue("%ss0" % (pressed,))
-		elif code == 105:
-			for string in range(6):
-				enqueue("%ss%d" % (pressed,string))
-				time.sleep(self.strum_delay_ms)
-		else:
-			sys.stderr.write("unknown %s %r %s \n" % (event.nativeScanCode(), event.text(), pressed))
-
-		global test
-		test=event
-
 tuning = [Note(name) for name in "E2 A2 D3 G3 B3 E4".split(" ")]
 FRET_COUNT = 19
 STRING_COUNT = 6
@@ -88,7 +34,7 @@ def calculate_last_frets(fret_bitmap):
 			key=lambda *args: args[0]
 		)[0] for string in fret_bitmap]
 
-def enqueue(command):
+def self.guitar_event.emit(command):
 	print(command)
 	global last_frets
 

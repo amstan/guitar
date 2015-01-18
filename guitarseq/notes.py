@@ -21,6 +21,10 @@ class Note(object):
 	def __repr__(self):
 		return "Note('%s')" % (self)
 	
+	@property
+	def letter(self):
+		return _octave[self.id % 12]
+
 	def __str__(self):
 		return "%s%s" % (_octave[self.id % 12], self.id // 12 - 1)
 	
