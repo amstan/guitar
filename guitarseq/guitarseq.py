@@ -31,7 +31,8 @@ class GuitarSeq(object):
 		self._struct.error_callback = jack.set_error_function(self.error)
 		self._struct.info_callback = jack.set_info_function(self.info)
 		self._struct.logging_buffer_size = 256
-		self._struct.logging_buffer = _ffi.new("char[]", self._struct.logging_buffer_size)
+		self._logging_buffer = _ffi.new("signed char[]", self._struct.logging_buffer_size)
+		self._struct.logging_buffer = self._logging_buffer
 
 		#Output port
 		self.out_port = self.jack_client.midi_outports.register("midi_out", is_terminal = True, is_physical = True)
