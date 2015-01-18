@@ -14,4 +14,4 @@ struct guitarseq {
 	jack_ringbuffer_t *in_buffer;
 };
 
-int process(jack_nframes_t nframes, CALLBACK_ARG);
+int process(jack_nframes_t nframes, void *arg);
