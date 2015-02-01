@@ -17,7 +17,12 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
+#include <stdio.h>
+#include <unistd.h>
+
 #include <stdlib.h>
+#include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/usb/usbd.h>
@@ -32,8 +37,8 @@ static const struct usb_device_descriptor dev = {
 	.bDeviceSubClass = 0,
 	.bDeviceProtocol = 0,
 	.bMaxPacketSize0 = 64,
-	.idVendor = 0xAAAA,
-	.idProduct = 0xAAAA,
+	.idVendor = 0x2500,
+	.idProduct = 0x0001,
 	.bcdDevice = 0x0200,
 	.iManufacturer = 1,
 	.iProduct = 2,
@@ -159,9 +164,9 @@ static const struct usb_config_descriptor config = {
 };
 
 static const char * usb_strings[] = {
-	"Black Sphere Technologies",
-	"CDC-ACM Demo",
-	"DEMO",
+	"HyperTriange",
+	"Guitar",
+	"",
 };
 
 /* Buffer to be used for control requests. */
@@ -201,9 +206,11 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
 	char buf[64];
 	int len = usbd_ep_read_packet(usbd_dev, 0x01, buf, 64);
 
+
+
 	if (len) {
 		while (usbd_ep_write_packet(usbd_dev, 0x82, buf, len) == 0);
-		while (usbd_ep_write_packet(usbd_dev, 0x82, buf, len) == 0);
+// 		while (usbd_ep_write_packet(usbd_dev, 0x82, buf, len) == 0);
 	}
 }
 
@@ -223,12 +230,9 @@ static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue)
 				cdcacm_control_request);
 }
 
-int main(void)
-{
-	usbd_device *usbd_dev;
+usbd_device* global_usbd_dev;
 
-	rcc_clock_setup_hse_3v3(&hse_8mhz_3v3[CLOCK_3V3_120MHZ]);
-
+usbd_device* usb_init(void) {
 	rcc_periph_clock_enable(RCC_GPIOA);
 	rcc_periph_clock_enable(RCC_OTGFS);
 
@@ -236,13 +240,36 @@ int main(void)
 			GPIO9 | GPIO11 | GPIO12);
 	gpio_set_af(GPIOA, GPIO_AF10, GPIO9 | GPIO11 | GPIO12);
 
-	usbd_dev = usbd_init(&otgfs_usb_driver, &dev, &config,
+	usbd_device *usbd_dev = usbd_init(&otgfs_usb_driver, &dev, &config,
 			usb_strings, 3,
 			usbd_control_buffer, sizeof(usbd_control_buffer));
 
 	usbd_register_set_config_callback(usbd_dev, cdcacm_set_config);
 
-	while (1) {
-		usbd_poll(usbd_dev);
+	global_usbd_dev = usbd_dev;
+	nvic_enable_irq(NVIC_OTG_FS_IRQ);
+
+	msleep(500);
+	printf("USB Console initialized!\n");
+
+	return usbd_dev;
+}
+
+void otg_fs_isr(void)
+{
+	gpio_toggle(GPIOD, GPIO13);
+	usbd_poll(global_usbd_dev);
+}
+
+int _write(int file, char *ptr, int len)
+{
+	if (file == STDOUT_FILENO || file == STDERR_FILENO) {
+		int i;
+		for (i = 0; i < len; i++) {
+			while (usbd_ep_write_packet(global_usbd_dev, 0x82, &ptr[i], 1) == 0);
+		}
+		return i;
 	}
+	errno = EIO;
+	return -1;
 }
