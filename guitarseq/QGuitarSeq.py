@@ -74,49 +74,92 @@ class KeyboardEmulator(QWidget):
 		else:
 			sys.stderr.write("unknown %s %r %s \n" % (event.nativeScanCode(), event.text(), pressed))
 
-class Fret(QPushButton):
+class QFret(QPushButton):
+	on_color = QColor(0,0,0)
+	off_color = QColor(0,0,0)
+
 	def __init__(self, string_id, fret_id, parent = None):
 		self.string_id = string_id
 		self.fret_id = fret_id
-		self.note = parent.guitarseq.tuning[string_id] + fret_id + 1
-
-		super().__init__("%s" % (self.note), parent)
+		super().__init__("%d, %d" % (self.string_id, self.fret_id), parent)
 
 		self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
 		self.setCheckable(True)
-		self.setChecked(False)
+		self.setChecked(True)
 
-		self.toggled.connect(self.on_toggled)
+		#Background color
+		self.released_color = self.palette()
+		self.released_color.setColor(QPalette.Button, QColor(30,30,30))
+		self.setPalette(self.released_color)
 
-		self._off_color = self.palette()
-		self._off_color.setColor(QPalette.Button, QColor(40,40,40))
+		#LED
+		self.update_color(self.off_color)
 
-		self._on_color = QPalette()
-		self._on_color.setColor(QPalette.Button, QColor(QColor.fromHslF((self.note.id % 12)/12,1,0.5)))
+	def resizeEvent(self, e):
+		self.led_border = 3.5
+		self.led_size = e.size().height() - self.led_border * 2
+		self.setStyleSheet("text-align: left; padding-left: %dpx; padding-right: %dpx" % (self.led_border * 2 + self.led_size, self.led_border * 2))
+		#self.update()
 
-		self.setAutoFillBackground(True)
-		self.on_toggled(self.isChecked())
+	def event(self, e):
+		if type(e) == QPaintEvent:
+			if self.isDown() or self.isChecked():
+				pal = self.palette()
+				pal.setColor(QPalette.Button, self.on_color.darker(600))
+				self.setPalette(pal)
+				self._current_color = self.on_color
+			else:
+				self.setPalette(self.released_color)
+				self._current_color = self.off_color
+		ret = super().event(e)
+		return ret
+
+	def paintEvent(self, e):
+		super().paintEvent(e)
+		qp = QPainter()
+		qp.begin(self)
+		qp.setRenderHint(QPainter.Antialiasing,True)
+		qp.setRenderHint(QPainter.HighQualityAntialiasing,True)
+		self.drawLED(qp)
+		qp.end()
+
+	def drawLED(self, qp):
+		border = 3.5
+
+		qp.setPen(QColor(64,64,64))
+		qp.setBrush(self._current_color)
+		qp.drawEllipse(QRectF(
+			self.led_border,
+			self.led_border,
+			self.led_size,
+			self.led_size
+		))
+
+	def update_color(self, color):
+		self.on_color = color
 		self.update()
 
-	def on_toggled(self, checked):
-		self.setPalette((self._off_color, self._on_color)[checked])
-		self.update()
-
-class GuitarPanel(QWidget):
-	def __init__(self, strings, frets, guitarseq, parent = None):
-		self.guitarseq = guitarseq
+class QFretPanel(QFrame):
+	def __init__(self, strings, frets, parent = None):
+		self.strings = strings
+		self.frets = frets
 
 		super().__init__(parent)
 
-		layout = QGridLayout(self)
+		self.layout = QGridLayout(self)
 
-		self.frets = []
-		for string_id in range(strings):
-			for fret_id in range(frets):
-				fret = Fret(string_id, fret_id, self)
+		for string_id in range(self.strings):
+			for fret_id in range(self.frets):
+				fret = QFret(self.strings - string_id -1, fret_id, self)
+				self.layout.addWidget(fret, string_id + 1, fret_id + 1)
 
-				layout.addWidget(fret, strings - string_id - 1, fret_id)
-				self.frets.append(fret)
+	def __iter__(self):
+		for string_id in range(self.strings):
+			for fret_id in range(self.frets):
+				yield self[string_id,fret_id]
+
+	def __getitem__(self, index):
+		return self.layout.itemAtPosition(self.strings - index[0], index[1] + 1).widget()
 
 class QGuitarSeq(QMainWindow):
 	def __init__(self, parent=None):
@@ -127,8 +170,33 @@ class QGuitarSeq(QMainWindow):
 		vsplitter=QSplitter(Qt.Vertical,self)
 		self.setCentralWidget(vsplitter)
 
-		self.guitar_panel = GuitarPanel(self.guitarseq.string_count, self.guitarseq.fret_count, self.guitarseq)
-		vsplitter.addWidget(self.guitar_panel)
+		tophsplitter=QSplitter(Qt.Horizontal,self)
+		vsplitter.addWidget(tophsplitter)
+
+		self.main_frets = QFretPanel(self.guitarseq.string_count, self.guitarseq.fret_count)
+		for fret in self.main_frets:
+			fret.note = self.guitarseq.tuning[fret.string_id] + fret.fret_id + 1
+			fret.setText(str(fret.note))
+			fret.on_color = QColor.fromHslF((fret.note.id % 12)/12,1,0.5)
+		tophsplitter.addWidget(self.main_frets)
+
+		self.string_frets = QFretPanel(self.guitarseq.string_count, 1)
+		for string in self.string_frets:
+			string.setText("String %d" % (string.string_id + 1))
+		tophsplitter.addWidget(self.string_frets)
+
+		test=QGraphicsView()
+		print(test.frameShape())
+		test.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+		tophsplitter.addWidget(test)
+
+		self.option_frets = QFretPanel(self.guitarseq.string_count, 2)
+		for fret in self.option_frets:
+			fret.setText("Option " + fret.text())
+		tophsplitter.addWidget(self.option_frets)
+
+		vsplitter.addWidget(QGraphicsView())
+		vsplitter.addWidget(QLabel("hi"))
 
 		self.setWindowTitle("QGuitarSeq")
 
@@ -136,7 +204,7 @@ class QGuitarSeq(QMainWindow):
 		self.timer.timeout.connect(self.scan_for_notes)
 		self.timer.start(10)
 
-		self.emulator = KeyboardEmulator()
+		self.emulator = KeyboardEmulator(self)
 		self.emulator.guitar_event.connect(self.guitarseq.on_guitar_event)
 		self.emulator.show()
 
@@ -149,16 +217,18 @@ class QGuitarSeq(QMainWindow):
 					(command, note_id, velocity) = data
 					print(time, (hex(command), note_id, velocity), notes.Note(note_id))
 					if (command & 0xe0) == 0x80:
-						self.handle_note(notes.Note(note_id), command & 0x10)
+						self.handle_note(notes.Note(note_id), command & 0x10, velocity)
 				except Exception:
 					print(time, data)
 				continue
 			break
 
-	def handle_note(self, note, pressed):
-		for fret in self.guitar_panel.frets:
+	def handle_note(self, note, pressed, velocity):
+		for fret in self.main_frets:
 			if fret.note.id == note.id:
 				fret.setChecked(pressed)
+				if pressed:
+					fret.update_color(QColor.fromHslF((fret.note.id % 12)/12,1,velocity/128.*0.7))
 
 if __name__ == '__main__':
 	import sys
