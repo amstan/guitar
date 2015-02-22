@@ -7,13 +7,13 @@
 
 #include "guitarseq.cffi.h"
 
-#define INFO(...)  {snprintf(guitarseq->logging_buffer, guitarseq->logging_buffer_size, __VA_ARGS__); guitarseq->info_callback(guitarseq->logging_buffer);}
-#define ERROR(...) {snprintf(guitarseq->logging_buffer, guitarseq->logging_buffer_size, __VA_ARGS__); guitarseq->error_callback(guitarseq->logging_buffer);}
+#define INFO(...)  {fprintf(stdout, __VA_ARGS__); fflush(stdout);}
+#define ERROR(...) {fprintf(stderr, __VA_ARGS__); fflush(stderr);}
 
 int process(jack_nframes_t nframes, void *arg) {
 	struct guitarseq *guitarseq = arg;
 	if(!guitarseq) {
-		printf("No guitarseq instance!\n");
+		fprintf(stderr, "No guitarseq instance!\n");
 		return 1;
 	}
 

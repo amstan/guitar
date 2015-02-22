@@ -37,13 +37,6 @@ class GuitarSeq(object):
 		self._struct = self._struct_ptr[0]
 		self._struct.jack_client = self.jack_client._ptr
 
-		#c logging
-		self._struct.error_callback = jack.set_error_function(self.error)
-		self._struct.info_callback = jack.set_info_function(self.info)
-		self._struct.logging_buffer_size = 256
-		self._logging_buffer = _ffi.new("signed char[]", self._struct.logging_buffer_size)
-		self._struct.logging_buffer = self._logging_buffer
-
 		#Output port
 		self.out_port = self.jack_client.midi_outports.register("midi_out", is_terminal = True, is_physical = True)
 		self._struct.out_port = self.out_port._ptr
@@ -56,19 +49,32 @@ class GuitarSeq(object):
 		self.in_buffer = jack.RingBuffer(4096)
 		self._struct.in_buffer = self.in_buffer._ptr
 
-		self.jack_client.set_process_callback(_libguitarseq.process, userdata=self._struct_ptr)
+		jack._check(
+			jack._lib.jack_set_process_callback(
+				self.jack_client._ptr,
+				_libguitarseq.process,
+				self._struct_ptr
+			),
+			"Error setting guitarseq C process callback"
+		)
 
 		self.jack_client.activate()
 
-	def error(self, msg):
-		print("Error: %s" % msg, end="")
+	@staticmethod
+	@jack.set_error_function
+	def jack_error(msg):
+		print("Error: %s" % msg)
 		sys.stdout.flush()
-	def info(self, msg):
-		print("%s" % msg, end="")
+
+	@staticmethod
+	@jack.set_info_function
+	def jack_info(msg):
+		print("%s" % msg)
 		sys.stdout.flush()
 
 	def out_event(self,*data):
-		data = bytes(data)
+		ffi_data = _ffi.new("jack_midi_data_t[]", len(data))
+		ffi_data[0:len(ffi_data)] = data
 
 		time = _ffi.new("jack_nframes_t[1]")
 		time[0] = self.jack_client.frame_time
@@ -82,9 +88,9 @@ class GuitarSeq(object):
 			#TODO: find out why i can't make this a wait loop
 			#raise Exception("No space left in ringbuffer")
 
-		self.out_buffer.write(time)
-		self.out_buffer.write(size)
-		self.out_buffer.write(data)
+		self.out_buffer.write(_ffi.buffer(time))
+		self.out_buffer.write(_ffi.buffer(size))
+		self.out_buffer.write(_ffi.buffer(ffi_data))
 
 	def note(self, on=True, note=64, velocity=64):
 		self.out_event(0x80 + 0x10*bool(on), note, velocity)
@@ -93,9 +99,9 @@ class GuitarSeq(object):
 		if self.in_buffer.read_space < (_ffi.sizeof("jack_nframes_t") + _ffi.sizeof("size_t")):
 			return None
 
-		time = _ffi.cast("jack_nframes_t[1]", self.in_buffer._read(_ffi.sizeof("jack_nframes_t"))[1])[0]
-		size = _ffi.cast("size_t[1]", self.in_buffer._read(_ffi.sizeof("size_t"))[1])[0]
-		return time, tuple(self.in_buffer.read(size))
+		time = _ffi.cast("jack_nframes_t[1]", _ffi.from_buffer(self.in_buffer.read(_ffi.sizeof("jack_nframes_t"))))[0]
+		size = _ffi.cast("size_t[1]", _ffi.from_buffer(self.in_buffer.read(_ffi.sizeof("size_t"))))[0]
+		return time, tuple(bytes(self.in_buffer.read(size)))
 
 	def recalculate_active_frets(self):
 		self.active_frets = [
