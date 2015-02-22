@@ -255,9 +255,66 @@ usbd_device* usb_init(void) {
 	return usbd_dev;
 }
 
+void update_leds(void) {
+	static unsigned char phase = 0;
+	phase++;
+	phase %= 8;
+	switch(phase) {
+		case 0:
+			gpio_set(GPIOD, GPIO12);
+			gpio_clear(GPIOD, GPIO13);
+			gpio_clear(GPIOD, GPIO14);
+			gpio_clear(GPIOD, GPIO15);
+			break;
+		case 1:
+			gpio_set(GPIOD, GPIO12);
+			gpio_set(GPIOD, GPIO13);
+			gpio_clear(GPIOD, GPIO14);
+			gpio_clear(GPIOD, GPIO15);
+			break;
+		case 2:
+			gpio_clear(GPIOD, GPIO12);
+			gpio_set(GPIOD, GPIO13);
+			gpio_clear(GPIOD, GPIO14);
+			gpio_clear(GPIOD, GPIO15);
+			break;
+		case 3:
+			gpio_clear(GPIOD, GPIO12);
+			gpio_set(GPIOD, GPIO13);
+			gpio_set(GPIOD, GPIO14);
+			gpio_clear(GPIOD, GPIO15);
+			break;
+		case 4:
+			gpio_clear(GPIOD, GPIO12);
+			gpio_clear(GPIOD, GPIO13);
+			gpio_set(GPIOD, GPIO14);
+			gpio_clear(GPIOD, GPIO15);
+			break;
+		case 5:
+			gpio_clear(GPIOD, GPIO12);
+			gpio_clear(GPIOD, GPIO13);
+			gpio_set(GPIOD, GPIO14);
+			gpio_set(GPIOD, GPIO15);
+			break;
+		case 6:
+			gpio_clear(GPIOD, GPIO12);
+			gpio_clear(GPIOD, GPIO13);
+			gpio_clear(GPIOD, GPIO14);
+			gpio_set(GPIOD, GPIO15);
+			break;
+		case 7:
+		default:
+			gpio_set(GPIOD, GPIO12);
+			gpio_clear(GPIOD, GPIO13);
+			gpio_clear(GPIOD, GPIO14);
+			gpio_set(GPIOD, GPIO15);
+			break;
+	}
+}
+
 void otg_fs_isr(void)
 {
-	gpio_toggle(GPIOD, GPIO13);
+	update_leds();
 	usbd_poll(global_usbd_dev);
 }
 
