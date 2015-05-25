@@ -206,11 +206,9 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
 	char buf[64];
 	int len = usbd_ep_read_packet(usbd_dev, 0x01, buf, 64);
 
-
-
 	if (len) {
+		//just loopback, TODO: send it to stdio instead
 		while (usbd_ep_write_packet(usbd_dev, 0x82, buf, len) == 0);
-// 		while (usbd_ep_write_packet(usbd_dev, 0x82, buf, len) == 0);
 	}
 }
 
@@ -249,7 +247,7 @@ usbd_device* usb_init(void) {
 	global_usbd_dev = usbd_dev;
 	nvic_enable_irq(NVIC_OTG_FS_IRQ);
 
-	msleep(500);
+	msleep(1000);
 	printf("USB Console initialized!\n");
 
 	return usbd_dev;
@@ -314,8 +312,8 @@ void update_leds(void) {
 
 void otg_fs_isr(void)
 {
-	update_leds();
 	usbd_poll(global_usbd_dev);
+	update_leds();
 }
 
 int _write(int file, char *ptr, int len)

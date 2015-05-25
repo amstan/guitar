@@ -48,9 +48,7 @@ int main(void) {
 	clock_setup();
 	gpio_setup();
 	systick_setup();
-	msleep(1000);
 	usb_init();
-	msleep(1000);
 
 // 	while(1) {
 // 		gpio_toggle(GPIOD, GPIO12);
