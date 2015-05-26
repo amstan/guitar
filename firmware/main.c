@@ -1,3 +1,8 @@
+#define LED_GREEN  (GPIOD, GPIO12)
+#define LED_ORANGE (GPIOD, GPIO13)
+#define LED_RED    (GPIOD, GPIO14)
+#define LED_BLUE   (GPIOD, GPIO15)
+
 #include "timer.c"
 #include "usb.c"
 #include "pins.c"
@@ -119,16 +124,31 @@ int main(void) {
 
 	unsigned char touch_id;
 
+// 	char buf[64];
+// 	while(1) {
+// 		int len = usbd_ep_read_packet(global_usbd_dev, ENDPOINT_FAST_IN, buf, 64);
+// 		if (len) {
+// 			for(unsigned int i=0;i<len;i++) {
+// 				printf("%02x ", buf[i]);
+// 			}
+// 		}
+// 		printf("\n");
+// 	}
+
+
+
+
+
 	printf("data:\n");
 	while (1) {
 
 
-		printf("msg[0x%04x]:\n", msg_object->start);
+// 		printf("msg[0x%04x]:\n", msg_object->start);
 		i2c_read_data(TP_ADDRESS, msg_object->start, tp_buffer, msg_object->size);
 
 		if(tp_buffer[0]!=0xff) {
-// 			if(tp_buffer[0] <= touch_id)
-// 				printf("\n");
+			if(tp_buffer[0] <= touch_id)
+				printf("\n");
 
 			touch_id = tp_buffer[0];
 
