@@ -29,13 +29,21 @@
 #include <libopencm3/usb/cdc.h>
 #include <libopencm3/cm3/scb.h>
 
+#define ENDPOINT_CDC_INTERRPUT  0x83
+#define ENDPOINT_CDC_RX         0x01
+#define ENDPOINT_CDC_TX         0x81
+
+#define ENDPOINT_CDC2_INTERRPUT 0x84
+#define ENDPOINT_CDC2_RX        0x02
+#define ENDPOINT_CDC2_TX        0x82
+
 static const struct usb_device_descriptor dev = {
 	.bLength = USB_DT_DEVICE_SIZE,
 	.bDescriptorType = USB_DT_DEVICE,
 	.bcdUSB = 0x0200,
-	.bDeviceClass = USB_CLASS_CDC,
-	.bDeviceSubClass = 0,
-	.bDeviceProtocol = 0,
+	.bDeviceClass = 0xEF,
+	.bDeviceSubClass = 2,
+	.bDeviceProtocol = 1,
 	.bMaxPacketSize0 = 64,
 	.idVendor = 0x2500,
 	.idProduct = 0x0001,
@@ -54,7 +62,7 @@ static const struct usb_device_descriptor dev = {
 static const struct usb_endpoint_descriptor comm_endp[] = {{
 	.bLength = USB_DT_ENDPOINT_SIZE,
 	.bDescriptorType = USB_DT_ENDPOINT,
-	.bEndpointAddress = 0x83,
+	.bEndpointAddress = ENDPOINT_CDC_INTERRPUT,
 	.bmAttributes = USB_ENDPOINT_ATTR_INTERRUPT,
 	.wMaxPacketSize = 16,
 	.bInterval = 255,
@@ -63,14 +71,40 @@ static const struct usb_endpoint_descriptor comm_endp[] = {{
 static const struct usb_endpoint_descriptor data_endp[] = {{
 	.bLength = USB_DT_ENDPOINT_SIZE,
 	.bDescriptorType = USB_DT_ENDPOINT,
-	.bEndpointAddress = 0x01,
+	.bEndpointAddress = ENDPOINT_CDC_RX,
 	.bmAttributes = USB_ENDPOINT_ATTR_BULK,
 	.wMaxPacketSize = 64,
 	.bInterval = 1,
 }, {
 	.bLength = USB_DT_ENDPOINT_SIZE,
 	.bDescriptorType = USB_DT_ENDPOINT,
-	.bEndpointAddress = 0x82,
+	.bEndpointAddress = ENDPOINT_CDC_TX,
+	.bmAttributes = USB_ENDPOINT_ATTR_BULK,
+	.wMaxPacketSize = 64,
+	.bInterval = 1,
+} };
+
+
+static const struct usb_endpoint_descriptor comm2_endp[] = {{
+	.bLength = USB_DT_ENDPOINT_SIZE,
+	.bDescriptorType = USB_DT_ENDPOINT,
+	.bEndpointAddress = ENDPOINT_CDC2_INTERRPUT,
+	.bmAttributes = USB_ENDPOINT_ATTR_INTERRUPT,
+	.wMaxPacketSize = 16,
+	.bInterval = 255,
+} };
+
+static const struct usb_endpoint_descriptor data2_endp[] = {{
+	.bLength = USB_DT_ENDPOINT_SIZE,
+	.bDescriptorType = USB_DT_ENDPOINT,
+	.bEndpointAddress = ENDPOINT_CDC2_RX,
+	.bmAttributes = USB_ENDPOINT_ATTR_BULK,
+	.wMaxPacketSize = 64,
+	.bInterval = 1,
+}, {
+	.bLength = USB_DT_ENDPOINT_SIZE,
+	.bDescriptorType = USB_DT_ENDPOINT,
+	.bEndpointAddress = ENDPOINT_CDC2_TX,
 	.bmAttributes = USB_ENDPOINT_ATTR_BULK,
 	.wMaxPacketSize = 64,
 	.bInterval = 1,
@@ -111,6 +145,41 @@ static const struct {
 	 }
 };
 
+static const struct {
+	struct usb_cdc_header_descriptor header;
+	struct usb_cdc_call_management_descriptor call_mgmt;
+	struct usb_cdc_acm_descriptor acm;
+	struct usb_cdc_union_descriptor cdc_union;
+} __attribute__((packed)) cdcacm2_functional_descriptors = {
+	.header = {
+		.bFunctionLength = sizeof(struct usb_cdc_header_descriptor),
+		.bDescriptorType = CS_INTERFACE,
+		.bDescriptorSubtype = USB_CDC_TYPE_HEADER,
+		.bcdCDC = 0x0110,
+	},
+	.call_mgmt = {
+		.bFunctionLength =
+			sizeof(struct usb_cdc_call_management_descriptor),
+		.bDescriptorType = CS_INTERFACE,
+		.bDescriptorSubtype = USB_CDC_TYPE_CALL_MANAGEMENT,
+		.bmCapabilities = 0,
+		.bDataInterface = 3,
+	},
+	.acm = {
+		.bFunctionLength = sizeof(struct usb_cdc_acm_descriptor),
+		.bDescriptorType = CS_INTERFACE,
+		.bDescriptorSubtype = USB_CDC_TYPE_ACM,
+		.bmCapabilities = 0,
+	},
+	.cdc_union = {
+		.bFunctionLength = sizeof(struct usb_cdc_union_descriptor),
+		.bDescriptorType = CS_INTERFACE,
+		.bDescriptorSubtype = USB_CDC_TYPE_UNION,
+		.bControlInterface = 2,
+		.bSubordinateInterface0 = 3,
+	 }
+};
+
 static const struct usb_interface_descriptor comm_iface[] = {{
 	.bLength = USB_DT_INTERFACE_SIZE,
 	.bDescriptorType = USB_DT_INTERFACE,
@@ -119,8 +188,8 @@ static const struct usb_interface_descriptor comm_iface[] = {{
 	.bNumEndpoints = 1,
 	.bInterfaceClass = USB_CLASS_CDC,
 	.bInterfaceSubClass = USB_CDC_SUBCLASS_ACM,
-	.bInterfaceProtocol = USB_CDC_PROTOCOL_AT,
-	.iInterface = 0,
+	.bInterfaceProtocol = USB_CDC_PROTOCOL_NONE,
+	.iInterface = 5,
 
 	.endpoint = comm_endp,
 
@@ -142,21 +211,87 @@ static const struct usb_interface_descriptor data_iface[] = {{
 	.endpoint = data_endp,
 } };
 
-static const struct usb_interface ifaces[] = {{
-	.num_altsetting = 1,
-	.altsetting = comm_iface,
-}, {
-	.num_altsetting = 1,
-	.altsetting = data_iface,
+static const struct usb_interface_descriptor comm2_iface[] = {{
+	.bLength = USB_DT_INTERFACE_SIZE,
+	.bDescriptorType = USB_DT_INTERFACE,
+	.bInterfaceNumber = 2,
+	.bAlternateSetting = 0,
+	.bNumEndpoints = 1,
+	.bInterfaceClass = USB_CLASS_CDC,
+	.bInterfaceSubClass = USB_CDC_SUBCLASS_ACM,
+	.bInterfaceProtocol = USB_CDC_PROTOCOL_NONE,
+	.iInterface = 6,
+
+	.endpoint = comm2_endp,
+
+	.extra = &cdcacm2_functional_descriptors,
+	.extralen = sizeof(cdcacm2_functional_descriptors)
 } };
+
+static const struct usb_interface_descriptor data2_iface[] = {{
+	.bLength = USB_DT_INTERFACE_SIZE,
+	.bDescriptorType = USB_DT_INTERFACE,
+	.bInterfaceNumber = 3,
+	.bAlternateSetting = 0,
+	.bNumEndpoints = 2,
+	.bInterfaceClass = USB_CLASS_DATA,
+	.bInterfaceSubClass = 0,
+	.bInterfaceProtocol = 0,
+	.iInterface = 0,
+
+	.endpoint = data2_endp,
+} };
+
+static const struct usb_iface_assoc_descriptor assoc1[] = {{
+	.bLength = USB_DT_INTERFACE_ASSOCIATION_SIZE,
+	.bDescriptorType = USB_DT_INTERFACE_ASSOCIATION,
+	.bFirstInterface = 0,
+	.bInterfaceCount = 2,
+	.bFunctionClass = USB_CLASS_CDC,
+	.bFunctionSubClass = 0,
+	.bFunctionProtocol = 0,
+	.iFunction = 5,
+}};
+
+static const struct usb_iface_assoc_descriptor assoc2[] = {{
+	.bLength = USB_DT_INTERFACE_ASSOCIATION_SIZE,
+	.bDescriptorType = USB_DT_INTERFACE_ASSOCIATION,
+	.bFirstInterface = 2,
+	.bInterfaceCount = 2,
+	.bFunctionClass = USB_CLASS_CDC,
+	.bFunctionSubClass = 0,
+	.bFunctionProtocol = 0,
+	.iFunction = 6,
+}};
+
+static const struct usb_interface ifaces[] = {
+// 	{},
+	{ .iface_assoc = assoc1,
+		.num_altsetting = 1,
+		.altsetting = comm_iface,
+	},
+	{
+		.num_altsetting = 1,
+		.altsetting = data_iface,
+	},
+// 	{},
+	{.iface_assoc = assoc2,
+		.num_altsetting = 1,
+		.altsetting = comm2_iface,
+	},
+	{
+		.num_altsetting = 1,
+		.altsetting = data2_iface,
+	}
+};
 
 static const struct usb_config_descriptor config = {
 	.bLength = USB_DT_CONFIGURATION_SIZE,
 	.bDescriptorType = USB_DT_CONFIGURATION,
 	.wTotalLength = 0,
-	.bNumInterfaces = 2,
+	.bNumInterfaces = 4,
 	.bConfigurationValue = 1,
-	.iConfiguration = 0,
+	.iConfiguration = 4,
 	.bmAttributes = 0x80,
 	.bMaxPower = 0x32,
 
@@ -170,7 +305,7 @@ static const char * usb_strings[] = {
 };
 
 /* Buffer to be used for control requests. */
-uint8_t usbd_control_buffer[128];
+uint8_t usbd_control_buffer[256];
 
 static int cdcacm_control_request(usbd_device *usbd_dev,
 	struct usb_setup_data *req, uint8_t **buf, uint16_t *len,
@@ -204,11 +339,36 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
 	(void)ep;
 
 	char buf[64];
-	int len = usbd_ep_read_packet(usbd_dev, 0x01, buf, 64);
+	int len = usbd_ep_read_packet(usbd_dev, ENDPOINT_CDC_RX, buf, 64);
+
+// 	gpio_toggle LED_GREEN;
 
 	if (len) {
+		gpio_set LED_GREEN;
+		gpio_set LED_RED;
 		//just loopback, TODO: send it to stdio instead
-		while (usbd_ep_write_packet(usbd_dev, 0x82, buf, len) == 0);
+		while (usbd_ep_write_packet(usbd_dev, ENDPOINT_CDC_TX, buf, len) == 0);
+		gpio_clear LED_GREEN;
+		gpio_clear LED_RED;
+	}
+}
+
+static void cdcacm_data2_rx_cb(usbd_device *usbd_dev, uint8_t ep)
+{
+	(void)ep;
+
+	char buf[64];
+	int len = usbd_ep_read_packet(usbd_dev, ENDPOINT_CDC2_RX, buf, 64);
+
+	gpio_toggle LED_BLUE;
+
+	if (len) {
+// 		gpio_set LED_BLUE;
+		gpio_set LED_RED;
+		//just loopback, TODO: send it to stdio instead
+		while (usbd_ep_write_packet(usbd_dev, ENDPOINT_CDC2_TX, buf, len) == 0);
+// 		gpio_clear LED_BLUE;
+		gpio_clear LED_RED;
 	}
 }
 
@@ -216,10 +376,14 @@ static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue)
 {
 	(void)wValue;
 
-	usbd_ep_setup(usbd_dev, 0x01, USB_ENDPOINT_ATTR_BULK, 64,
+	usbd_ep_setup(usbd_dev, ENDPOINT_CDC_RX, USB_ENDPOINT_ATTR_BULK, 64,
 			cdcacm_data_rx_cb);
-	usbd_ep_setup(usbd_dev, 0x82, USB_ENDPOINT_ATTR_BULK, 64, NULL);
-	usbd_ep_setup(usbd_dev, 0x83, USB_ENDPOINT_ATTR_INTERRUPT, 16, NULL);
+	usbd_ep_setup(usbd_dev, ENDPOINT_CDC_TX, USB_ENDPOINT_ATTR_BULK, 64, NULL);
+	usbd_ep_setup(usbd_dev, ENDPOINT_CDC_INTERRPUT, USB_ENDPOINT_ATTR_INTERRUPT, 16, NULL);
+
+	usbd_ep_setup(usbd_dev, ENDPOINT_CDC2_RX, USB_ENDPOINT_ATTR_BULK, 64, cdcacm_data2_rx_cb);
+	usbd_ep_setup(usbd_dev, ENDPOINT_CDC2_TX, USB_ENDPOINT_ATTR_BULK, 64, NULL);
+	usbd_ep_setup(usbd_dev, ENDPOINT_CDC2_INTERRPUT, USB_ENDPOINT_ATTR_INTERRUPT, 16, NULL);
 
 	usbd_register_control_callback(
 				usbd_dev,
@@ -253,67 +417,10 @@ usbd_device* usb_init(void) {
 	return usbd_dev;
 }
 
-void update_leds(void) {
-	static unsigned char phase = 0;
-	phase++;
-	phase %= 8;
-	switch(phase) {
-		case 0:
-			gpio_set(GPIOD, GPIO12);
-			gpio_clear(GPIOD, GPIO13);
-			gpio_clear(GPIOD, GPIO14);
-			gpio_clear(GPIOD, GPIO15);
-			break;
-		case 1:
-			gpio_set(GPIOD, GPIO12);
-			gpio_set(GPIOD, GPIO13);
-			gpio_clear(GPIOD, GPIO14);
-			gpio_clear(GPIOD, GPIO15);
-			break;
-		case 2:
-			gpio_clear(GPIOD, GPIO12);
-			gpio_set(GPIOD, GPIO13);
-			gpio_clear(GPIOD, GPIO14);
-			gpio_clear(GPIOD, GPIO15);
-			break;
-		case 3:
-			gpio_clear(GPIOD, GPIO12);
-			gpio_set(GPIOD, GPIO13);
-			gpio_set(GPIOD, GPIO14);
-			gpio_clear(GPIOD, GPIO15);
-			break;
-		case 4:
-			gpio_clear(GPIOD, GPIO12);
-			gpio_clear(GPIOD, GPIO13);
-			gpio_set(GPIOD, GPIO14);
-			gpio_clear(GPIOD, GPIO15);
-			break;
-		case 5:
-			gpio_clear(GPIOD, GPIO12);
-			gpio_clear(GPIOD, GPIO13);
-			gpio_set(GPIOD, GPIO14);
-			gpio_set(GPIOD, GPIO15);
-			break;
-		case 6:
-			gpio_clear(GPIOD, GPIO12);
-			gpio_clear(GPIOD, GPIO13);
-			gpio_clear(GPIOD, GPIO14);
-			gpio_set(GPIOD, GPIO15);
-			break;
-		case 7:
-		default:
-			gpio_set(GPIOD, GPIO12);
-			gpio_clear(GPIOD, GPIO13);
-			gpio_clear(GPIOD, GPIO14);
-			gpio_set(GPIOD, GPIO15);
-			break;
-	}
-}
-
 void otg_fs_isr(void)
 {
 	usbd_poll(global_usbd_dev);
-	update_leds();
+	gpio_toggle LED_ORANGE;
 }
 
 int _write(int file, char *ptr, int len)
@@ -321,7 +428,7 @@ int _write(int file, char *ptr, int len)
 	if (file == STDOUT_FILENO || file == STDERR_FILENO) {
 		int i;
 		for (i = 0; i < len; i++) {
-			while (usbd_ep_write_packet(global_usbd_dev, 0x82, &ptr[i], 1) == 0);
+			while (usbd_ep_write_packet(global_usbd_dev, ENDPOINT_CDC2_TX, &ptr[i], 1) == 0);
 		}
 		return i;
 	}
