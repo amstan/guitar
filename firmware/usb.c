@@ -30,12 +30,12 @@
 #include <libopencm3/cm3/scb.h>
 
 #define ENDPOINT_CDC_INTERRPUT  0x83
-#define ENDPOINT_CDC_RX         0x01
-#define ENDPOINT_CDC_TX         0x81
+#define ENDPOINT_CDC_IN         0x01
+#define ENDPOINT_CDC_OUT        0x81
 
 #define ENDPOINT_CDC2_INTERRPUT 0x84
-#define ENDPOINT_CDC2_RX        0x02
-#define ENDPOINT_CDC2_TX        0x82
+#define ENDPOINT_CDC2_IN        0x02
+#define ENDPOINT_CDC2_OUT       0x82
 
 static const struct usb_device_descriptor dev = {
 	.bLength = USB_DT_DEVICE_SIZE,
@@ -71,14 +71,14 @@ static const struct usb_endpoint_descriptor comm_endp[] = {{
 static const struct usb_endpoint_descriptor data_endp[] = {{
 	.bLength = USB_DT_ENDPOINT_SIZE,
 	.bDescriptorType = USB_DT_ENDPOINT,
-	.bEndpointAddress = ENDPOINT_CDC_RX,
+	.bEndpointAddress = ENDPOINT_CDC_IN,
 	.bmAttributes = USB_ENDPOINT_ATTR_BULK,
 	.wMaxPacketSize = 64,
 	.bInterval = 1,
 }, {
 	.bLength = USB_DT_ENDPOINT_SIZE,
 	.bDescriptorType = USB_DT_ENDPOINT,
-	.bEndpointAddress = ENDPOINT_CDC_TX,
+	.bEndpointAddress = ENDPOINT_CDC_OUT,
 	.bmAttributes = USB_ENDPOINT_ATTR_BULK,
 	.wMaxPacketSize = 64,
 	.bInterval = 1,
@@ -97,14 +97,14 @@ static const struct usb_endpoint_descriptor comm2_endp[] = {{
 static const struct usb_endpoint_descriptor data2_endp[] = {{
 	.bLength = USB_DT_ENDPOINT_SIZE,
 	.bDescriptorType = USB_DT_ENDPOINT,
-	.bEndpointAddress = ENDPOINT_CDC2_RX,
+	.bEndpointAddress = ENDPOINT_CDC2_IN,
 	.bmAttributes = USB_ENDPOINT_ATTR_BULK,
 	.wMaxPacketSize = 64,
 	.bInterval = 1,
 }, {
 	.bLength = USB_DT_ENDPOINT_SIZE,
 	.bDescriptorType = USB_DT_ENDPOINT,
-	.bEndpointAddress = ENDPOINT_CDC2_TX,
+	.bEndpointAddress = ENDPOINT_CDC2_OUT,
 	.bmAttributes = USB_ENDPOINT_ATTR_BULK,
 	.wMaxPacketSize = 64,
 	.bInterval = 1,
@@ -339,7 +339,7 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
 	(void)ep;
 
 	char buf[64];
-	int len = usbd_ep_read_packet(usbd_dev, ENDPOINT_CDC_RX, buf, 64);
+	int len = usbd_ep_read_packet(usbd_dev, ENDPOINT_CDC_IN, buf, 64);
 
 // 	gpio_toggle LED_GREEN;
 
@@ -347,7 +347,7 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
 		gpio_set LED_GREEN;
 		gpio_set LED_RED;
 		//just loopback, TODO: send it to stdio instead
-		while (usbd_ep_write_packet(usbd_dev, ENDPOINT_CDC_TX, buf, len) == 0);
+		while (usbd_ep_write_packet(usbd_dev, ENDPOINT_CDC_OUT, buf, len) == 0);
 		gpio_clear LED_GREEN;
 		gpio_clear LED_RED;
 	}
@@ -358,7 +358,7 @@ static void cdcacm_data2_rx_cb(usbd_device *usbd_dev, uint8_t ep)
 	(void)ep;
 
 	char buf[64];
-	int len = usbd_ep_read_packet(usbd_dev, ENDPOINT_CDC2_RX, buf, 64);
+	int len = usbd_ep_read_packet(usbd_dev, ENDPOINT_CDC2_IN, buf, 64);
 
 	gpio_toggle LED_BLUE;
 
@@ -366,7 +366,7 @@ static void cdcacm_data2_rx_cb(usbd_device *usbd_dev, uint8_t ep)
 // 		gpio_set LED_BLUE;
 		gpio_set LED_RED;
 		//just loopback, TODO: send it to stdio instead
-		while (usbd_ep_write_packet(usbd_dev, ENDPOINT_CDC2_TX, buf, len) == 0);
+		while (usbd_ep_write_packet(usbd_dev, ENDPOINT_CDC2_OUT, buf, len) == 0);
 // 		gpio_clear LED_BLUE;
 		gpio_clear LED_RED;
 	}
@@ -376,13 +376,13 @@ static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue)
 {
 	(void)wValue;
 
-	usbd_ep_setup(usbd_dev, ENDPOINT_CDC_RX, USB_ENDPOINT_ATTR_BULK, 64,
+	usbd_ep_setup(usbd_dev, ENDPOINT_CDC_IN, USB_ENDPOINT_ATTR_BULK, 64,
 			cdcacm_data_rx_cb);
-	usbd_ep_setup(usbd_dev, ENDPOINT_CDC_TX, USB_ENDPOINT_ATTR_BULK, 64, NULL);
+	usbd_ep_setup(usbd_dev, ENDPOINT_CDC_OUT, USB_ENDPOINT_ATTR_BULK, 64, NULL);
 	usbd_ep_setup(usbd_dev, ENDPOINT_CDC_INTERRPUT, USB_ENDPOINT_ATTR_INTERRUPT, 16, NULL);
 
-	usbd_ep_setup(usbd_dev, ENDPOINT_CDC2_RX, USB_ENDPOINT_ATTR_BULK, 64, cdcacm_data2_rx_cb);
-	usbd_ep_setup(usbd_dev, ENDPOINT_CDC2_TX, USB_ENDPOINT_ATTR_BULK, 64, NULL);
+	usbd_ep_setup(usbd_dev, ENDPOINT_CDC2_IN, USB_ENDPOINT_ATTR_BULK, 64, cdcacm_data2_rx_cb);
+	usbd_ep_setup(usbd_dev, ENDPOINT_CDC2_OUT, USB_ENDPOINT_ATTR_BULK, 64, NULL);
 	usbd_ep_setup(usbd_dev, ENDPOINT_CDC2_INTERRPUT, USB_ENDPOINT_ATTR_INTERRUPT, 16, NULL);
 
 	usbd_register_control_callback(
@@ -428,7 +428,7 @@ int _write(int file, char *ptr, int len)
 	if (file == STDOUT_FILENO || file == STDERR_FILENO) {
 		int i;
 		for (i = 0; i < len; i++) {
-			while (usbd_ep_write_packet(global_usbd_dev, ENDPOINT_CDC2_TX, &ptr[i], 1) == 0);
+			while (usbd_ep_write_packet(global_usbd_dev, ENDPOINT_CDC2_OUT, &ptr[i], 1) == 0);
 		}
 		return i;
 	}
