@@ -341,15 +341,11 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
 	char buf[64];
 	int len = usbd_ep_read_packet(usbd_dev, ENDPOINT_CDC_IN, buf, 64);
 
-// 	gpio_toggle LED_GREEN;
+	gpio_toggle LED_GREEN;
 
 	if (len) {
-		gpio_set LED_GREEN;
-		gpio_set LED_RED;
 		//just loopback, TODO: send it to stdio instead
-		while (usbd_ep_write_packet(usbd_dev, ENDPOINT_CDC_OUT, buf, len) == 0);
-		gpio_clear LED_GREEN;
-		gpio_clear LED_RED;
+		usbd_ep_write_packet(usbd_dev, ENDPOINT_CDC_OUT, buf, len);
 	}
 }
 
@@ -363,12 +359,8 @@ static void cdcacm_data2_rx_cb(usbd_device *usbd_dev, uint8_t ep)
 	gpio_toggle LED_BLUE;
 
 	if (len) {
-// 		gpio_set LED_BLUE;
-		gpio_set LED_RED;
 		//just loopback, TODO: send it to stdio instead
-		while (usbd_ep_write_packet(usbd_dev, ENDPOINT_CDC2_OUT, buf, len) == 0);
-// 		gpio_clear LED_BLUE;
-		gpio_clear LED_RED;
+		usbd_ep_write_packet(usbd_dev, ENDPOINT_CDC2_OUT, buf, len);
 	}
 }
 
@@ -428,7 +420,7 @@ int _write(int file, char *ptr, int len)
 	if (file == STDOUT_FILENO || file == STDERR_FILENO) {
 		int i;
 		for (i = 0; i < len; i++) {
-			while (usbd_ep_write_packet(global_usbd_dev, ENDPOINT_CDC2_OUT, &ptr[i], 1) == 0);
+			while (usbd_ep_write_packet(global_usbd_dev, ENDPOINT_CDC_OUT, &ptr[i], 1) == 0);
 		}
 		return i;
 	}

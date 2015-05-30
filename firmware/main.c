@@ -124,6 +124,19 @@ int main(void) {
 
 	unsigned char touch_id;
 
+// 	char buf[64];
+// 	while(1) {
+// 		int len = usbd_ep_read_packet(global_usbd_dev, ENDPOINT_CDC2_IN, buf, 64);
+// 		if (len) {
+// 			for(unsigned int i=0;i<len;i++) {
+// 				printf("%02x ", buf[i]);
+// 			}
+// 		}
+// 		printf("\n");
+// 		msleep(400);
+// 	}
+
+
 	printf("data:\n");
 	while (1) {
 
