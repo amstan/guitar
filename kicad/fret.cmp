@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by Cvpcb (2015-05-30 BZR 5691)-product   date = Sat May 30 20:30:40 2015
+Cmp-Mod V01 Created by Cvpcb (2015-05-30 BZR 5691)-product   date = Sat May 30 22:14:06 2015
 
 BeginCmp
 TimeStamp = /547EE5D6;
@@ -120,13 +120,6 @@ IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
 EndCmp
 
 BeginCmp
-TimeStamp = /556B48E5;
-Reference = J9;
-ValeurCmp = GND;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
-EndCmp
-
-BeginCmp
 TimeStamp = /547F6717;
 Reference = J10;
 ValeurCmp = CONN_01X06;
@@ -137,84 +130,84 @@ BeginCmp
 TimeStamp = /547EE0A6;
 Reference = LED0;
 ValeurCmp = WS2812;
-IdModule  = SMD_Packages:SOT-553;
+IdModule  = guitar-components:5050-6pin;
 EndCmp
 
 BeginCmp
 TimeStamp = /556B2B80;
 Reference = LED1;
 ValeurCmp = WS2812;
-IdModule  = SMD_Packages:SOT-553;
+IdModule  = guitar-components:5050-6pin;
 EndCmp
 
 BeginCmp
 TimeStamp = /556B31BF;
 Reference = LED2;
 ValeurCmp = WS2812;
-IdModule  = SMD_Packages:SOT-553;
+IdModule  = guitar-components:5050-6pin;
 EndCmp
 
 BeginCmp
 TimeStamp = /556B31EF;
 Reference = LED3;
 ValeurCmp = WS2812;
-IdModule  = SMD_Packages:SOT-553;
+IdModule  = guitar-components:5050-6pin;
 EndCmp
 
 BeginCmp
 TimeStamp = /556B3740;
 Reference = LED4;
 ValeurCmp = WS2812;
-IdModule  = SMD_Packages:SOT-553;
+IdModule  = guitar-components:5050-6pin;
 EndCmp
 
 BeginCmp
 TimeStamp = /556B3770;
 Reference = LED5;
 ValeurCmp = WS2812;
-IdModule  = SMD_Packages:SOT-553;
+IdModule  = guitar-components:5050-6pin;
 EndCmp
 
 BeginCmp
 TimeStamp = /547F2AD1;
 Reference = P0;
 ValeurCmp = TOUCH;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:TP-8x15;
 EndCmp
 
 BeginCmp
 TimeStamp = /547F2EBD;
 Reference = P1;
 ValeurCmp = TOUCH;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:TP-8x15;
 EndCmp
 
 BeginCmp
 TimeStamp = /547F2EDC;
 Reference = P2;
 ValeurCmp = TOUCH;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:TP-8x15;
 EndCmp
 
 BeginCmp
 TimeStamp = /547F2EFB;
 Reference = P3;
 ValeurCmp = TOUCH;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:TP-8x15;
 EndCmp
 
 BeginCmp
 TimeStamp = /547F2F1A;
 Reference = P4;
 ValeurCmp = TOUCH;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:TP-8x15;
 EndCmp
 
 BeginCmp
 TimeStamp = /547F2F39;
 Reference = P5;
 ValeurCmp = TOUCH;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:TP-8x15;
 EndCmp
 
 BeginCmp
