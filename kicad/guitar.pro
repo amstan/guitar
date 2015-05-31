@@ -1,11 +1,6 @@
-update=Sat May 30 19:45:23 2015
+update=Sat May 30 20:30:36 2015
 version=1
-last_client=kicad
-[cvpcb]
-version=1
-NetIExt=net
-[cvpcb/libraries]
-EquName1=devcms
+last_client=cvpcb
 [pcbnew]
 version=1
 LastNetListRead=
@@ -62,3 +57,6 @@ LibName28=contrib
 LibName29=valves
 LibName30=SparkFun
 LibName31=guitar-components
+[cvpcb]
+version=1
+NetIExt=net

@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name guitar-components)(type KiCad)(uri "$(KIPRJMOD)/guitar-components.pretty")(options "")(descr ""))
+)
