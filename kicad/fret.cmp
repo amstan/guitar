@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by Cvpcb (2015-05-30 BZR 5691)-product   date = Sat May 30 22:14:06 2015
+Cmp-Mod V01 Created by Cvpcb (2015-05-30 BZR 5691)-product   date = Sun May 31 18:07:48 2015
 
 BeginCmp
 TimeStamp = /547EE5D6;
@@ -64,66 +64,87 @@ IdModule  = Capacitors_SMD:C_0603;
 EndCmp
 
 BeginCmp
+TimeStamp = /556BB350;
+Reference = C9;
+ValeurCmp = 22uF;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /556BB592;
+Reference = C10;
+ValeurCmp = 22uF;
+IdModule  = Capacitors_SMD:C_0805;
+EndCmp
+
+BeginCmp
 TimeStamp = /556ACC73;
 Reference = J1;
 ValeurCmp = +5V;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:IDC-1x1;
 EndCmp
 
 BeginCmp
 TimeStamp = /556ADE23;
 Reference = J2;
 ValeurCmp = GNDPWR;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:IDC-1x1;
 EndCmp
 
 BeginCmp
 TimeStamp = /556ADE62;
 Reference = J3;
 ValeurCmp = +3.3V;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:IDC-1x1;
 EndCmp
 
 BeginCmp
 TimeStamp = /556ADEA1;
 Reference = J4;
 ValeurCmp = GND;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:IDC-1x1;
 EndCmp
 
 BeginCmp
 TimeStamp = /556ADEE0;
 Reference = J5;
 ValeurCmp = SDA;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:IDC-1x1;
 EndCmp
 
 BeginCmp
 TimeStamp = /556ADF1F;
 Reference = J6;
 ValeurCmp = SCL;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:IDC-1x1;
 EndCmp
 
 BeginCmp
 TimeStamp = /556B323A;
 Reference = J7;
 ValeurCmp = TEST;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:pad-2mm-round;
 EndCmp
 
 BeginCmp
 TimeStamp = /556B3279;
 Reference = J8;
 ValeurCmp = ~RST;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x01;
+IdModule  = guitar-components:pad-2mm-round;
 EndCmp
 
 BeginCmp
 TimeStamp = /547F6717;
 Reference = J10;
 ValeurCmp = CONN_01X06;
-IdModule  = Pin_Headers:Pin_Header_Straight_1x06;
+IdModule  = Connectors_Molex:Connector_Molex_PicoBlade_53261-0671;
+EndCmp
+
+BeginCmp
+TimeStamp = /556BC964;
+Reference = JP1;
+ValeurCmp = GNDPWR-GND;
+IdModule  = Capacitors_SMD:C_0603;
 EndCmp
 
 BeginCmp
@@ -277,7 +298,14 @@ BeginCmp
 TimeStamp = /547EAFE1;
 Reference = U1;
 ValeurCmp = MSP430G2553IRHB32;
-IdModule  = Housings_DFN_QFN:DFN-22-1EP_5x6mm_Pitch0.5mm;
+IdModule  = Housings_DFN_QFN:QFN-32-1EP_5x5mm_Pitch0.5mm;
+EndCmp
+
+BeginCmp
+TimeStamp = /556BAE57;
+Reference = U2;
+ValeurCmp = AP2210N-3.3TRG1;
+IdModule  = Housings_SOT-23_SOT-143_TSOT-6:SOT-23;
 EndCmp
 
 EndListe
