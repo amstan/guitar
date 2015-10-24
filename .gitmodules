@@ -3,6 +3,6 @@
 	url = git@github.com:amstan/jackclient-python.git
 	branch = master
 [submodule "firmware/libopencm3"]
-	path = firmware/libopencm3
+	path = libopencm3
 	url = git@github.com:libopencm3/libopencm3.git
 	branch = master
