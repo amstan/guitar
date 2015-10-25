@@ -21,7 +21,7 @@ BINARY = main
 
 LDSCRIPT = stm32f0-discovery.ld
 
-OPENCM3_DIR = libopencm3
+OPENCM3_DIR = ../libopencm3
 
 LIBNAME		= opencm3_stm32f0
 DEFS		= -DSTM32F0
