@@ -112,8 +112,6 @@ class GuitarSeq(object):
 		]
 
 	def on_guitar_event(self, event):
-		print(event)
-
 		pressed = event[0] == 'p'
 		event_type = event[1]
 		string = int(event[2])
@@ -131,6 +129,11 @@ class GuitarSeq(object):
 					self.last_played[string] = None
 
 		elif event_type == 's':
+			if len(event) > 3 and event[3] == 'v':
+				velocity = int(event[4:])
+			else:
+				velocity = 64
+
 			if pressed:
 				if self.last_played[string] != None:
 					#mute string
@@ -138,7 +141,7 @@ class GuitarSeq(object):
 			else: #released
 				note = self.tuning[string] + self.active_frets[string] + 1
 				self.last_played[string] = note
-				self.note(True, note.id)
+				self.note(True, note.id, velocity)
 
 if __name__=="__main__":
 	import notes

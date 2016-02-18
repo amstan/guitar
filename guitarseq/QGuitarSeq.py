@@ -65,14 +65,27 @@ class KeyboardEmulator(QWidget):
 			self.guitar_event.emit("%ss3" % (pressed,))
 		elif code == 36: #Enter
 			self.guitar_event.emit("%ss2" % (pressed,)); time.sleep(self.strum_delay_ms)
-			self.guitar_event.emit("%ss1" % (pressed,)); time.slee/p(self.strum_delay_ms)
+			self.guitar_event.emit("%ss1" % (pressed,)); time.sleep(self.strum_delay_ms)
 			self.guitar_event.emit("%ss0" % (pressed,))
 		elif code == 105: #Ctrl
 			for string in range(6):
 				self.guitar_event.emit("%ss%d" % (pressed,string))
 				time.sleep(self.strum_delay_ms)
 		else:
-			sys.stderr.write("unknown %s %r %s \n" % (event.nativeScanCode(), event.text(), pressed))
+			sys.stderr.write("Unknown KeyEvent %s %r %s \n" % (event.nativeScanCode(), event.text(), pressed))
+
+import device
+class GuitarDevice(device.Device, QThread):
+	guitar_event = pyqtSignal(str)
+
+	def __init__(self):
+		device.Device.__init__(self)
+		QThread.__init__(self)
+
+	def run(self):
+		for event in self.process_strings():
+			self.guitar_event.emit("ps%d" % event["string_id"])
+			self.guitar_event.emit("rs%dv%03d" % (event["string_id"], event["velocity"]))
 
 class QFret(QPushButton):
 	on_color = QColor(0,0,0)
@@ -186,7 +199,6 @@ class QGuitarSeq(QMainWindow):
 		tophsplitter.addWidget(self.string_frets)
 
 		test=QGraphicsView()
-		print(test.frameShape())
 		test.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 		tophsplitter.addWidget(test)
 
@@ -204,9 +216,13 @@ class QGuitarSeq(QMainWindow):
 		self.timer.timeout.connect(self.scan_for_notes)
 		self.timer.start(10)
 
-		self.emulator = KeyboardEmulator(self)
+		self.emulator = KeyboardEmulator()
 		self.emulator.guitar_event.connect(self.guitarseq.on_guitar_event)
 		self.emulator.show()
+
+		self.guitar_device = GuitarDevice()
+		self.guitar_device.guitar_event.connect(self.guitarseq.on_guitar_event)
+		self.guitar_device.start()
 
 	def scan_for_notes(self):
 		while 1:

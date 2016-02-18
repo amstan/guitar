@@ -42,7 +42,7 @@ int process(jack_nframes_t nframes, void *arg) {
 		size_t size;
 		jack_ringbuffer_read(guitarseq->out_buffer, (char *)&size, sizeof(size));
 
-		INFO("out event at %d%+d size %zu\n", now, offset, size);
+		INFO("out event at %u%+d size %zu\n", now, offset, size);
 
 		if (offset > nframes)
 			// from the past, somehow. cram it in at the front
@@ -55,7 +55,7 @@ int process(jack_nframes_t nframes, void *arg) {
 		} else {
 			// throw it away :( TODO: find more
 			jack_ringbuffer_read_advance (guitarseq->out_buffer, size);
-			ERROR("threw away MIDI event - no space reserved at time %d offset %d\n",time,offset);
+			ERROR("threw away MIDI event - no space reserved at time %u offset %d\n",time,offset);
 		}
 	}
 
@@ -72,7 +72,7 @@ int process(jack_nframes_t nframes, void *arg) {
 			jack_ringbuffer_write(guitarseq->in_buffer, (char *)&in_event.size, sizeof(in_event.size));
 			jack_ringbuffer_write(guitarseq->in_buffer, (char *)in_event.buffer, in_event.size);
 		} else {
-			ERROR("Couldn't write to ringbuffer at %d, %zu midi data bytes lost\n", in_event.time, in_event.size);
+			ERROR("Couldn't write to ringbuffer at %u, %zu midi data bytes lost\n", in_event.time, in_event.size);
 		}
 	}
 
