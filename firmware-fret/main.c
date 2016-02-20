@@ -19,11 +19,10 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libopencm3/stm32/i2c.h>
-#include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/tsc.h>
+#include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/usart.h>
+#include <libopencm3/stm32/tsc.h>
 #include <stdio.h>
 #include <errno.h>
 #include <stdio.h>
@@ -86,78 +85,12 @@ void usart_setup(void)
 	usart_enable(USART1);
 }
 
-static void i2c_setup(void)
-{
-	rcc_periph_clock_enable(RCC_I2C1);
-	rcc_periph_clock_enable(RCC_GPIOB);
-	rcc_set_i2c_clock_hsi(I2C1);
-
-	i2c_reset(I2C1);
-	/* Setup GPIO pin GPIO_USART2_TX/GPIO9 on GPIO port A for transmit. */
-	gpio_mode_setup(GPIOB, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO6 | GPIO7);
-	gpio_set_af(GPIOB, GPIO_AF4, GPIO6| GPIO7);
-	i2c_peripheral_disable(I2C1);
-	//configure ANFOFF DNF[3:0] in CR1
-	i2c_enable_analog_filter(I2C1);
-	i2c_set_digital_filter(I2C1, I2C_CR1_DNF_DISABLED);
-	//Configure PRESC[3:0] SDADEL[3:0] SCLDEL[3:0] SCLH[7:0] SCLL[7:0]
-	// in TIMINGR
-	i2c_100khz_i2cclk8mhz(I2C1);
-	//configure No-Stretch CR1 (only relevant in slave mode)
-	i2c_enable_stretching(I2C1);
-	//addressing mode
-	i2c_set_7bit_addr_mode(I2C1);
-	i2c_peripheral_enable(I2C1);
-}
-
- void read_i2c(uint32_t i2c, uint8_t i2c_addr, uint8_t reg, uint8_t size,
-              uint8_t *data)
-{
-	int wait;
-	int i;
-	while (i2c_busy(i2c) == 1);
-	while (i2c_is_start(i2c) == 1);
-	/*Setting transfer properties*/
-	i2c_set_bytes_to_transfer(i2c, 2);
-	i2c_set_7bit_address(i2c, i2c_addr);
-	i2c_set_write_transfer_dir(i2c);
-	i2c_disable_autoend(i2c);
-	/*start transfer*/
-	i2c_send_start(i2c);
-
-	wait = true;
-	while (wait) {
-		if (i2c_transmit_int_status(i2c)) {
-			wait = false;
-		}
-		while (i2c_nack(i2c)); /* Some error */
-	}
-	i2c_send_data(i2c, 0);
-	i2c_send_data(i2c, reg);
-
-	while (i2c_is_start(i2c) == 1);
-	/*Setting transfer properties*/
-	i2c_set_bytes_to_transfer(i2c, size);
-	i2c_set_7bit_address(i2c, i2c_addr);
-	i2c_set_read_transfer_dir(i2c);
-	i2c_enable_autoend(i2c);
-	/*start transfer*/
-	i2c_send_start(i2c);
-
-	for (i = 0; i < size; i++) {
-		while (i2c_received_data(i2c) == 0);
-		data[i] = i2c_get_data(i2c);
-	}
-}
-
-
 int main(void)
 {
 	clock_setup();
 	systick_setup();
 	usart_setup();
 	gpio_setup();
-	i2c_setup();
 
 	gpio_set LED_GREEN;
 	printf("\n\nGuitar Fret Discovery Board\n");
@@ -165,15 +98,6 @@ int main(void)
 
 	while(1){
 		printf(".\n");
-		
-		uint8_t data[100];
-		
-		read_i2c(I2C1, 0x4b, 0, 7, data);
-		for(unsigned int i = 0; i < 7; i++) {
-			printf("0x%02x ");
-		}
-		printf("\n");
-		
 		msleep(500);
 	}
 
