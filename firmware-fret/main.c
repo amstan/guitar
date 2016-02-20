@@ -28,13 +28,14 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include <stdlib.h>
-#include "timer.c"
-
 #define LED_RED    (GPIOC, GPIO6)
 #define LED_BLUE   (GPIOC, GPIO7)
 #define LED_ORANGE (GPIOC, GPIO8)
 #define LED_GREEN  (GPIOC, GPIO9)
+
+#include <stdlib.h>
+#include "timer.c"
+#include "i2c_slave.c"
 
 static void gpio_setup(void)
 {
@@ -98,9 +99,11 @@ int main(void)
 	printf("Version %s\n", GIT_HASH);
 	msleep(100);
 
+	i2c_setup();
+
 	while(1){
-		printf(".\n");
-		msleep(500);
+		printf(".");
+		msleep(100);
 	}
 
 	return 0;

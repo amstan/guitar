@@ -94,7 +94,7 @@ CXXFLAGS	+= -fno-common -ffunction-sections -fdata-sections
 # C & C++ preprocessor common flags
 
 CPPFLAGS	+= -MD
-CPPFLAGS	+= -Wall -Wundef
+CPPFLAGS	+= -Wall -Wundef -Werror-implicit-function-declaration
 CPPFLAGS	+= -I$(INCLUDE_DIR) $(DEFS)
 CPPFLAGS	+= -DCOMPILE_TIME="\"$(shell date)\""
 CPPFLAGS	+= -DGIT_HASH="\"$(shell git describe --abbrev=7 --dirty --always)\""
