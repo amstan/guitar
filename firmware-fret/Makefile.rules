@@ -96,6 +96,8 @@ CXXFLAGS	+= -fno-common -ffunction-sections -fdata-sections
 CPPFLAGS	+= -MD
 CPPFLAGS	+= -Wall -Wundef
 CPPFLAGS	+= -I$(INCLUDE_DIR) $(DEFS)
+CPPFLAGS	+= -DCOMPILE_TIME="\"$(shell date)\""
+CPPFLAGS	+= -DGIT_HASH="\"$(shell git describe --abbrev=7 --dirty --always)\""
 
 ###############################################################################
 # Linker flags

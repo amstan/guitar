@@ -94,6 +94,8 @@ int main(void)
 
 	gpio_set LED_GREEN;
 	printf("\n\nGuitar Fret Discovery Board\n");
+	printf("Compiled %s\n", COMPILE_TIME);
+	printf("Version %s\n", GIT_HASH);
 	msleep(100);
 
 	while(1){
