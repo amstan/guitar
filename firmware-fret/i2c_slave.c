@@ -1,5 +1,7 @@
 #include <libopencm3/stm32/i2c.h>
 
+#include "registers.h"
+
 #define I2C_SLAVE_ADDRESS 0x25
 #define I2C_BUS I2C1
 #define I2C_PIN_PORT GPIOB
@@ -55,6 +57,10 @@ void i2c_setup(void)
 	nvic_enable_irq(NVIC_I2C1_IRQ);
 }
 
+//used to count the first 2 bytes of the address
+uint16_t i2c_registers_address_bytes = 0;
+uint16_t i2c_registers_address;
+
 void i2c1_isr(void) {
 	//WARNING: prints in here are a bad idea
 	static int i=0;
@@ -63,29 +69,47 @@ void i2c1_isr(void) {
 
 	gpio_set LED_BLUE;
 
-	if (isr & I2C_ISR_ADDR) {
-		printf("\naddress match 0x%04lx dir%d\n", I2C_ISR_ADDCODE_VALG(isr), !!(isr & I2C_ISR_DIR));
-		I2C_ICR(I2C_BUS) = I2C_ICR_ADDRCF;
-	}
-
 	if (isr & I2C_ISR_RXNE) {
+		//do this first so we don't lose a char if other events are happening
 		volatile uint8_t byte = I2C_RXDR(I2C_BUS);
-		printf("rx 0x%02x\n", byte);
+
+
+		if (i2c_registers_address_bytes < 2) {
+			i2c_registers_address >>= 8;
+			i2c_registers_address |= byte << 8;
+			i2c_registers_address_bytes++;
+		} else {
+			i2c_registers_address_bytes = 2;
+			/* we have an address to write at already! */
+			registers[i2c_registers_address++] = byte;
+			registers_write_callback(i2c_registers_address-1);
+		}
 	}
 
-	if (isr & I2C_ISR_TXIS) {
-		volatile uint8_t byte = 0x50;
-		I2C_TXDR(I2C_BUS) = byte;
-		printf("tx 0x%02x\n", byte);
+	if (isr & I2C_ISR_ADDR) {
+// 		printf("\n");
+// 		printf("\naddress match 0x%04lx dir%d\n", I2C_ISR_ADDCODE_VALG(isr), !!(isr & I2C_ISR_DIR));
+		I2C_ICR(I2C_BUS) = I2C_ICR_ADDRCF;
+		i2c_registers_address_bytes = 0;
+		if (isr & I2C_ISR_DIR) {
+			I2C_ISR(I2C_BUS) |= I2C_ISR_TXE;
+		}
+	}
+
+	if (isr & (I2C_ISR_TXIS | I2C_ISR_DIR)) {
+		if(!(isr & I2C_ISR_STOPF)) {
+			volatile uint8_t byte = registers[i2c_registers_address++];
+			I2C_TXDR(I2C_BUS) = byte;
+			registers_read_callback(i2c_registers_address-1);
+		}
 	}
 
 	if (isr & I2C_ISR_STOPF) {
-		printf("stop\n");
 		I2C_ICR(I2C_BUS) = I2C_ICR_STOPCF;
+		I2C_TXDR(I2C_BUS) = 0; //hack to avoid another txis interrupt at the end
 	}
 
 	if (isr & I2C_ISR_NACKF) {
-		printf("nack\n");
 		I2C_ICR(I2C_BUS) = I2C_ICR_NACKCF;
 	}
 

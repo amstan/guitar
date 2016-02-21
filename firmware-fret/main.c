@@ -86,6 +86,22 @@ void usart_setup(void)
 	usart_enable(USART1);
 }
 
+unsigned char registers[0x100];
+
+#define CHIP_ID 0x25
+
+void registers_init() {
+	registers[0] = CHIP_ID;
+
+}
+
+void registers_read_callback(uint16_t address) {
+	//printf("r 0x%04x==0x%02x\n", address, registers[address]);
+}
+void registers_write_callback(uint16_t address) {
+	printf("w 0x%04x:0x%02x\n", address, registers[address]);
+}
+
 int main(void)
 {
 	clock_setup();
