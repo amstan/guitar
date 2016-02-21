@@ -22,7 +22,6 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/usart.h>
-#include <libopencm3/stm32/tsc.h>
 #include <stdio.h>
 #include <errno.h>
 #include <stdio.h>
@@ -37,6 +36,7 @@
 #include "timer.c"
 #include "i2c_slave.c"
 #include "ws2812.c"
+#include "touch.c"
 
 static void gpio_setup(void)
 {
@@ -95,6 +95,7 @@ unsigned char registers[0x100];
 /*
  * Map:
  * 0x00 : CHIP_ID "0x25"
+ * 0x40-0x4c : 16 bit touch data
  * 0x80-0x91 : RGB LEDs values
  * 0x92 : Commit the RGB LEDs (write anything)
  *
@@ -125,6 +126,7 @@ int main(void)
 	usart_setup();
 	gpio_setup();
 	registers_init();
+	touch_init();
 
 	gpio_set LED_GREEN;
 	printf("\n\nGuitar Fret Discovery Board\n");
@@ -138,7 +140,29 @@ int main(void)
 
 	while(1){
 		printf(".");
-		msleep(100);
+
+		touch_read();
+		printf("%5u %5u %5u\n", value[0], value[1], value[2]);
+		*((uint16_t *) (registers + 0x40)) = value[0];
+		*((uint16_t *) (registers + 0x42)) = value[1];
+		*((uint16_t *) (registers + 0x44)) = value[2];
+
+		if ((value[0]*140/100)>140)
+			gpio_set LED_RED;
+		else
+			gpio_clear LED_RED;
+
+		if (value[1]>140)
+			gpio_set LED_ORANGE;
+		else
+			gpio_clear LED_ORANGE;
+
+		if (value[2]>140)
+			gpio_set LED_GREEN;
+		else
+			gpio_clear LED_GREEN;
+
+		msleep(10);
 	}
 
 	return 0;
