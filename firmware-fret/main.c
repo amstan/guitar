@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include "timer.c"
 #include "i2c_slave.c"
+#include "ws2812.c"
 
 static void gpio_setup(void)
 {
@@ -47,6 +48,10 @@ static void gpio_setup(void)
 	rcc_periph_clock_enable(RCC_GPIOC);
 	gpio_mode_setup(GPIOC, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO6 | GPIO7 | GPIO8 | GPIO9);
 	gpio_clear(GPIOC, GPIO6 | GPIO7 | GPIO8 | GPIO9);
+
+	//ws2812
+	rcc_periph_clock_enable(RCC_GPIOC);
+	gpio_mode_setup(GPIOC, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO12);
 }
 
 int _write(int file, char *ptr, int len)
@@ -87,19 +92,30 @@ void usart_setup(void)
 }
 
 unsigned char registers[0x100];
+/*
+ * Map:
+ * 0x00 : CHIP_ID "0x25"
+ * 0x80-0x91 : RGB LEDs values
+ * 0x92 : Commit the RGB LEDs (write anything)
+ *
+ */
+uint8_t *ws2812_colors = registers + 0X80;
 
 #define CHIP_ID 0x25
 
-void registers_init() {
-	registers[0] = CHIP_ID;
-
+void registers_init(void) {
+	registers[0x00] = CHIP_ID;
 }
 
 void registers_read_callback(uint16_t address) {
 	//printf("r 0x%04x==0x%02x\n", address, registers[address]);
 }
 void registers_write_callback(uint16_t address) {
-	printf("w 0x%04x:0x%02x\n", address, registers[address]);
+// 	printf("w 0x%04x:0x%02x\n", address, registers[address]);
+	if (address == 0x92) {
+// 		printf("set leds");
+		ws2812_sendarray(ws2812_colors,6*3);
+	}
 }
 
 int main(void)
@@ -108,6 +124,7 @@ int main(void)
 	systick_setup();
 	usart_setup();
 	gpio_setup();
+	registers_init();
 
 	gpio_set LED_GREEN;
 	printf("\n\nGuitar Fret Discovery Board\n");
@@ -116,6 +133,8 @@ int main(void)
 	msleep(100);
 
 	i2c_setup();
+
+	ws2812_sendarray(ws2812_colors,6*3);
 
 	while(1){
 		printf(".");
