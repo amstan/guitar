@@ -1152,7 +1152,7 @@ NoConn ~ 5650 1600
 NoConn ~ 5650 1700
 Text Label 7700 2750 2    60   ~ 0
 SWCLK
-Text Label 7700 2850 2    60   ~ 0
+Text Label 7700 2650 2    60   ~ 0
 SWDIO
 Text Label 4650 3050 2    60   ~ 0
 SWCLK
@@ -1481,8 +1481,6 @@ Wire Wire Line
 Wire Wire Line
 	7350 2750 7700 2750
 Wire Wire Line
-	7700 2850 7350 2850
-Wire Wire Line
 	4300 3050 4650 3050
 Wire Wire Line
 	4650 2950 4300 2950
@@ -1639,7 +1637,7 @@ F 4 "0ohm" H 8050 3550 60  0001 C CNN "Digi-Key Page"
 $EndComp
 NoConn ~ 7350 1700
 NoConn ~ 7350 2150
-NoConn ~ 7350 2650
+NoConn ~ 7350 2850
 NoConn ~ 7350 3050
 NoConn ~ 7350 3150
 Text Label 7400 1300 0    60   ~ 0
@@ -1659,4 +1657,7 @@ P5
 Text Label 7400 2550 0    60   ~ 0
 CG4
 Connection ~ 7750 3350
+Wire Wire Line
+	7700 2650 7350 2650
+NoConn ~ 7350 3250
 $EndSCHEMATC
