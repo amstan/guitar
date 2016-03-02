@@ -11,17 +11,17 @@ inline void ws2812_write_byte(uint8_t byte) {
 	for(int j = 7; j >= 0; j--)
 	{
 		bool bit = (byte & (1 << j)) == 0;
-		gpio_set(GPIOC,GPIO12);
-		GPIOC_BSRR = 1 << 12;
+		gpio_set(GPIOA,GPIO7);
+		GPIOA_BSRR = 1 << 7;
 		if(bit)
-			GPIOC_BSRR = 1 << 12 << 16;
+			GPIOA_BSRR = 1 << 7 << 16;
 		__asm__("nop");
 		__asm__("nop");
 		__asm__("nop");
 		__asm__("nop");
 		__asm__("nop");
 		__asm__("nop");
-		GPIOC_BSRR = 1 << 12 << 16;
+		GPIOA_BSRR = 1 << 7 << 16;
 	}
 }
 

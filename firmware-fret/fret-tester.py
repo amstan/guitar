@@ -70,15 +70,15 @@ def dynamic_led_test(fret):
 	)
 	#colors=colors[::6] #faster
 	#colors = [[b,b,b] for r,g,b in colors] #white glow
-	colors = [[r//5,g//5,b//5] for r,g,b in colors] #lower brightness
+	#colors = [[r//5,g//5,b//5] for r,g,b in colors] #lower brightness
 
 	print("Watch the pretty colors!")
 	while True:
 		for j in range(len(colors)):
-			c=rotate(colors,j)[::len(colors)//30]
-			#for g in range(20//10):
+			c=rotate(colors,j)[::len(colors)//6]
+			for g in range(20//10):
 				##what if we had more frets(20x slower), was doing touch(2x slower), but increased the i2c speed(10x faster) too
-			r[0x80:]=sum(c,[])+[0x00]
+				r[0x80:]=sum(c,[])+[0x00]
 			#for g in range(20//10):
 				##blink test to show the fps
 				#r[0x80:]=[0x00]*6*3+[0x00]

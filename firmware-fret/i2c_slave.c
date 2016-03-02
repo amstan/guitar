@@ -5,7 +5,7 @@
 #define I2C_SLAVE_ADDRESS 0x25
 #define I2C_BUS I2C1
 #define I2C_PIN_PORT GPIOB
-#define I2C_PINS GPIO8 | GPIO9
+#define I2C_PINS GPIO6 | GPIO7
 #define I2C_PIN_AF GPIO_AF1
 
 void i2c_setup(void)
@@ -67,7 +67,6 @@ void i2c1_isr(void) {
 
 	uint32_t isr = I2C_ISR(I2C_BUS);
 
-	gpio_set LED_BLUE;
 
 	if (isr & I2C_ISR_RXNE) {
 		//do this first so we don't lose a char if other events are happening
@@ -116,12 +115,10 @@ void i2c1_isr(void) {
 	if (isr & 0x3f00) {
 		i++;
 		if(i>10) {
-			gpio_set LED_RED;
 			while(1) {
-				printf("i2c error 0x%08lx\n", isr);
+// 				printf("i2c error 0x%08lx\n", isr);
 			}
 		}
 	}
 
-	gpio_clear LED_BLUE;
 }

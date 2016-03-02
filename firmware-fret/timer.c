@@ -12,9 +12,6 @@ volatile uint32_t system_millis;
 void sys_tick_handler(void)
 {
 	system_millis++;
-
-	if ((system_millis % 100) == 0)
-		fflush(0);
 }
 
 /* sleep for delay milliseconds */
