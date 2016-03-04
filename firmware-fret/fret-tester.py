@@ -75,7 +75,7 @@ def dynamic_led_test(fret):
 	print("Watch the pretty colors!")
 	while True:
 		for j in range(len(colors)):
-			c=rotate(colors,j)[::len(colors)//6]
+			c=rotate(colors,j)[::len(colors)//20]
 			for g in range(20//10):
 				##what if we had more frets(20x slower), was doing touch(2x slower), but increased the i2c speed(10x faster) too
 				r[0x80:]=sum(c,[])+[0x00]
@@ -85,7 +85,12 @@ def dynamic_led_test(fret):
 
 def touch_test(fret):
 	while True:
-		fret.registers[0x80:]=[fret.registers[0x40],fret.registers[0x42],fret.registers[0x44]]*6+[0x00]
+		raws=fret.registers[0x40:0x40+6*2]
+
+		lsbs=raws[0::2]
+		msbs=raws[1::2]
+
+		print(("%10d" * 6) % tuple(msb*256 + lsb for msb, lsb in zip(msbs, lsbs)))
 
 if __name__=="__main__":
 	i2c = I2C("/dev/i2c-0")

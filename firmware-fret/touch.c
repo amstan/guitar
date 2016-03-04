@@ -12,7 +12,7 @@
 #define S3_P GPIO0 //TS_G3_IO2
 #define S3_C GPIO1 //TS_G3_IO3
 
-#define MAXHISTORY 500
+#define MAXHISTORY 300
 uint16_t history[MAXHISTORY][6];
 uint16_t max[6];
 uint16_t *touch_values = registers + 0x40;
@@ -21,9 +21,12 @@ int touch_group_read(uint32_t channels, uint16_t *g1, uint16_t *g4) {
 	TSC_CR &= ~TSC_CR_TSCE;
 	TSC_IOCCR = channels; //channel selection per group
 	TSC_CR |= TSC_CR_TSCE;
+	msleep(1); //TODO: Figure out a way to do switch channels without a delay
 
+// 	cm_disable_interrupts(); //TODO: Necessary?
 	TSC_CR |= TSC_CR_START;
 	while(TSC_CR & TSC_CR_START);
+// 	cm_enable_interrupts();
 
 // 	while((TSC_IOGCSR & (TSC_IOGCSR_GxS(1) | TSC_IOGCSR_GxS(2) | TSC_IOGCSR_GxS(3))) != (TSC_IOGCSR_GxS(1) | TSC_IOGCSR_GxS(2) | TSC_IOGCSR_GxS(3)));
 
@@ -32,12 +35,13 @@ int touch_group_read(uint32_t channels, uint16_t *g1, uint16_t *g4) {
 }
 
 void touch_read(void) {
-	touch_group_read(TSC_IOCCR_G1(1) | TSC_IOCCR_G4(1), &touch_values[0], &touch_values[3]);
-	touch_group_read(TSC_IOCCR_G1(2) | TSC_IOCCR_G4(2), &touch_values[1], &touch_values[4]);
-	touch_group_read(TSC_IOCCR_G1(3) | TSC_IOCCR_G4(3), &touch_values[2], &touch_values[5]);
+	uint16_t values[6];
+	touch_group_read(TSC_IOCCR_G1(1) | TSC_IOCCR_G4(1), &values[0], &values[3]);
+	touch_group_read(TSC_IOCCR_G1(2) | TSC_IOCCR_G4(2), &values[1], &values[4]);
+	touch_group_read(TSC_IOCCR_G1(3) | TSC_IOCCR_G4(3), &values[2], &values[5]);
 
 	for(unsigned int i = 0; i < 6; i++) {
-		history[(MAXHISTORY-1)][i] = touch_values[i];
+		history[(MAXHISTORY-1)][i] = values[i];
 
 		max[i] = 0;
 		for (uint16_t h = 0; h < (MAXHISTORY - 1); h++) {
@@ -45,9 +49,13 @@ void touch_read(void) {
 						max[i] = history[h][i];
 				history[h][i] = history[h+1][i];
 		}
-		touch_values[i] = max[i] - touch_values[i];
-		if(touch_values[i] > 32000)
-				touch_values[i] = 0;
+		values[i] = max[i] - values[i];
+		if(values[i] > 32000)
+				values[i] = 0;
+		values[i] /= 6;
+		if(values[i] > 255)
+			values[i] = 255;
+		touch_values[i] = values[i];
 	}
 }
 

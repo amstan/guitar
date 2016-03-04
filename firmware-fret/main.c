@@ -97,8 +97,24 @@ int main(void)
 	ws2812_colors[2] = 0;
 	ws2812_sendarray(ws2812_colors,6*3);
 
+	uint8_t rainbow[6][3] = {
+		{255,0,0},
+		{192,192,0},
+		{0,255,0},
+		{0,192,192},
+		{0,0,255},
+		{192,0,192},
+	};
+
 	while(1){
 		touch_read();
+
+		for(unsigned int led = 0; led < 6; led++) {
+			for(unsigned int c = 0; c < 3; c++) {
+				ws2812_colors[led*3 + c] = rainbow[led][c] * touch_values[led] / 256;
+			}
+		}
+		ws2812_sendarray(ws2812_colors,6*3);
 
 		msleep(10);
 	}
