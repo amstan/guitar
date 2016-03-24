@@ -100,7 +100,40 @@ unsigned char registers[0x100];
  * 0x92 : Commit the RGB LEDs (write anything)
  *
  */
-uint8_t *ws2812_colors = registers + 0X80;
+uint8_t ws2812_colors[] = {
+	255,0,0,
+	255,0,0,
+	255,0,0,
+	255,0,0,
+	200,200,0,
+	200,200,0,
+	200,200,0,
+	200,200,0,
+	0,255,0,
+	0,255,0,
+	0,255,0,
+	0,255,0,
+	0,50,255,
+	0,50,255,
+	0,50,255,
+	0,50,255,
+	255,0,0,
+	255,0,0,
+	255,0,0,
+	255,0,0,
+	200,200,0,
+	200,200,0,
+	200,200,0,
+	200,200,0,
+	0,255,0,
+	0,255,0,
+	0,255,0,
+	0,255,0,
+	0,50,255,
+	0,50,255,
+	0,50,255,
+	0,50,255,
+};
 
 #define CHIP_ID 0x25
 
@@ -115,7 +148,7 @@ void registers_write_callback(uint16_t address) {
 // 	printf("w 0x%04x:0x%02x\n", address, registers[address]);
 	if (address == 0x92) {
 // 		printf("set leds");
-		ws2812_sendarray(ws2812_colors,6*3);
+		ws2812_sendarray(ws2812_colors,16*3);
 	}
 }
 
@@ -136,7 +169,16 @@ int main(void)
 
 	i2c_setup();
 
-	ws2812_sendarray(ws2812_colors,6*3);
+	for(unsigned int i=0;i<sizeof(ws2812_colors);i++) {
+		ws2812_colors[i]/=8;
+	}
+
+	while(1) {
+		for(unsigned int i=0;i<16;i++) {
+			ws2812_sendarray(ws2812_colors+i*3,16*3);
+			msleep(100);
+		}
+	}
 
 	while(1){
 		printf(".");
