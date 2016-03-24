@@ -22,6 +22,8 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 
+#include <string.h>
+
 #include "timer.c"
 #include "i2c_slave.c"
 #include "ws2812.c"
@@ -42,30 +44,67 @@ static void gpio_setup(void)
 	gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO7);
 }
 
-unsigned char registers[0x100];
-/*
- * Map:
- * 0x00 : CHIP_ID "0x25"
- * 0x40-0x4c : 16 bit touch data
- * 0x80-0x91 : RGB LEDs values
- * 0x92 : Commit the RGB LEDs (write anything)
- *
- */
-uint8_t *ws2812_colors = registers + 0X80;
+volatile uint8_t demo_mode = 1;
 
 #define CHIP_ID 0x25
 
-void registers_init(void) {
-	registers[0x00] = CHIP_ID;
-}
+void handle_i2c_bufs(void) {
+	uint8_t command = i2c_rx_buf[0];
+	uint8_t *args = i2c_rx_buf + 1;
 
-void registers_read_callback(uint16_t address) {
-	//printf("r 0x%04x==0x%02x\n", address, registers[address]);
-}
-void registers_write_callback(uint16_t address) {
-// 	printf("w 0x%04x:0x%02x\n", address, registers[address]);
-	if (address == 0x92) {
-		ws2812_sendarray(ws2812_colors,6*3);
+	uint32_t *location;
+	uint8_t length;
+	uint32_t *data;
+
+	switch (command) {
+		/* Meta */
+		/* CHIP_ID */
+		case 0x00:
+			i2c_tx_buf[0] = CHIP_ID;
+			break;
+
+		/* Version */
+		case 0x01:
+			memcpy(i2c_tx_buf, GIT_HASH, strlen(GIT_HASH));
+			break;
+
+		/* COMPILE_TIME */
+		case 0x02:
+			memcpy(i2c_tx_buf, COMPILE_TIME, strlen(COMPILE_TIME));
+			break;
+
+		/* Touch */
+		case 0x10:
+			for(unsigned int t = 0; t < 6; t++)
+				((uint16_t*)i2c_tx_buf)[t] = touch_values[t];
+			break;
+
+		/* LEDs */
+		case 0x20:
+			ws2812_sendarray(args,6*3);
+			memcpy(i2c_tx_buf, args, 6*3);
+			break;
+
+		/* Misc */
+		case 0xe0:
+			demo_mode = args[0];
+			break;
+
+		/* Memory and programming */
+		/* Read */
+		case 0xf0:
+			location = ((uint32_t *)args)[0];
+			length = ((uint32_t *)args)[1];
+			memcpy(i2c_tx_buf, location, length);
+			break;
+
+		/* Write */
+		case 0xf1:
+			location = ((uint32_t *)args)[0];
+			length = ((uint32_t *)args)[1];
+			data = &((uint32_t *)args)[2];
+			memcpy(location, *data, length);
+			break;
 	}
 }
 
@@ -74,8 +113,9 @@ int main(void)
 	clock_setup();
 	systick_setup();
 	gpio_setup();
-	registers_init();
+	touch_init();
 
+	uint8_t ws2812_colors[6*3] = {0};
 	msleep(100);
 	ws2812_sendarray(ws2812_colors,6*3);
 	ws2812_colors[0] = 255;
@@ -109,12 +149,14 @@ int main(void)
 	while(1){
 		touch_read();
 
-		for(unsigned int led = 0; led < 6; led++) {
-			for(unsigned int c = 0; c < 3; c++) {
-				ws2812_colors[led*3 + c] = rainbow[led][c] * touch_values[led] / 256;
+		if (demo_mode) {
+			for(unsigned int led = 0; led < 6; led++) {
+				for(unsigned int c = 0; c < 3; c++) {
+					ws2812_colors[led*3 + c] = rainbow[led][c] * touch_values[led] / 256;
+				}
 			}
+			ws2812_sendarray(ws2812_colors,6*3);
 		}
-		ws2812_sendarray(ws2812_colors,6*3);
 
 		msleep(10);
 	}

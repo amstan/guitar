@@ -15,7 +15,7 @@
 #define MAXHISTORY 300
 uint16_t history[MAXHISTORY][6];
 uint16_t max[6];
-uint16_t *touch_values = registers + 0x40;
+uint16_t touch_values[6];
 
 int touch_group_read(uint32_t channels, uint16_t *g1, uint16_t *g4) {
 	TSC_CR &= ~TSC_CR_TSCE;

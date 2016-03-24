@@ -1,4 +1,5 @@
 from periphery import *
+import struct
 
 DEFAULT_I2C_ADDRESS = 0x25
 
@@ -17,49 +18,83 @@ def _process_key(key, size):
 		single = False
 	return start, length, single
 
-class FretRegisters(object):
-	COUNT = 256
+class FretMemory(object):
+	MAXMEM = 0xffffffff
+	TRANSFER_BLOCK_SIZE = 16
+	_uint32_fmt = "<I"
+
+	def __init__(self, fret):
+		self._fret = fret
 
 	def __getitem__(self, key):
-		start, length, single = _process_key(key, self.COUNT)
+		location, length, single = _process_key(key, self.MAXMEM)
 
-		msg = [
-			I2C.Message([start, 0x00]),
-			I2C.Message([0x00] * length, read=True)
-		];
+		assert(length != 1)
 
-		self.i2c.transfer(self.i2c_address, msg);
+		args = (list(struct.pack(self._uint32_fmt, location)) +
+		        list(struct.pack(self._uint32_fmt, length * 4)))
 
-		if single:
-			return msg[1].data[0];
-		else:
-			return msg[1].data;
+		data = self._fret.command(0xf0, args, expected_length = length * 4)
 
-	def __setitem__(self, key, value):
-		start, length, single = _process_key(key, self.COUNT)
-		if single:
-			value = [value]
-		else:
-			value = list(value)
+		return bytes(data)
 
-		self.i2c.transfer(self.i2c_address, [I2C.Message([start, 0x00] + value)])
+	#def __setitem__(self, key, value):
+		#start, length, single = _process_key(key, self.MAXMEM)
+		#if single:
+			#value = [value]
+		#else:
+			#value = list(value)
 
-	def __repr__(self):
-		return "FretRegisters"+repr(f[:])
+		#self.i2c.transfer(self.i2c_address, [I2C.Message([start, 0x00] + value)])
 
 class Fret(object):
-	def __init__(self, i2c, address = DEFAULT_I2C_ADDRESS):
-		self.registers = FretRegisters()
-		self.registers.fret = self
-		self.registers.i2c_address = address
-		self.registers.i2c = i2c
+	def __init__(self, i2c, i2c_address = DEFAULT_I2C_ADDRESS):
+		self.i2c = i2c
+		self.i2c_address = i2c_address
+		self.memory = FretMemory(self)
 
+		self.set_demo_mode(False)
+
+	def command(self, command_id, args=[], expected_length=100):
+		if expected_length == 0:
+			#it really doesn't like it yet
+			expected_length = 1
+
+		transmit = I2C.Message([command_id] + args)
+		recieve = I2C.Message([0x00] * expected_length, read=True)
+
+		self.i2c.transfer(self.i2c_address, [transmit, recieve])
+		return recieve.data
+
+	@property
 	def chip_id(self):
-		return self.registers[0]
+		return self.command(0x00, expected_length=1)[0]
+
+	@property
+	def version(self):
+		string = bytes(self.command(0x01))
+		return string[:string.index(0)]
+
+	@property
+	def compile_time(self):
+		string = bytes(self.command(0x02))
+		return string[:string.index(0)]
+
+	@property
+	def touch(self):
+		raws = self.command(0x10, expected_length=6*2)
+		lsbs=raws[0::2]
+		msbs=raws[1::2]
+
+		return tuple(msb*256 + lsb for msb, lsb in zip(msbs, lsbs))
+
+	def set_leds(self, data):
+		return self.command(0x20, data, expected_length=0)
+
+	def set_demo_mode(self, on = True):
+		self.command(0xe0, [int(on)], expected_length=0)
 
 def dynamic_led_test(fret):
-	r=fret.registers
-
 	def rotate(l,n):
 		return l[n:] + l[:n]
 
@@ -76,12 +111,18 @@ def dynamic_led_test(fret):
 	while True:
 		for j in range(len(colors)):
 			c=rotate(colors,j)[::len(colors)//20]
-			for g in range(20//10):
+			#for g in range(20//10):
 				##what if we had more frets(20x slower), was doing touch(2x slower), but increased the i2c speed(10x faster) too
-				r[0x80:]=sum(c,[])+[0x00]
+			fret.set_leds(sum(c,[]))
 			#for g in range(20//10):
 				##blink test to show the fps
 				#r[0x80:]=[0x00]*6*3+[0x00]
+			grayscale = " .:-=+*#%@"
+			touch = fret.touch
+			for t in touch:
+				print ("%27s" % (grayscale[t % len(grayscale)] + grayscale[-1] * int(t / len(grayscale)),), end="")
+			print()
+
 
 def touch_test(fret):
 	while True:
@@ -96,4 +137,3 @@ if __name__=="__main__":
 	i2c = I2C("/dev/i2c-0")
 	fret = Fret(i2c)
 	dynamic_led_test(fret)
-	#while True: print((("%02x "*3+"  ")*6)%tuple(fret.registers[0x80:0x80+6*3])) #can be used to see the colors that another python process is setting
