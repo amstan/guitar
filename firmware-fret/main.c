@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
 #define LED_RED    (GPIOC, GPIO6)
 #define LED_BLUE   (GPIOC, GPIO7)
@@ -91,31 +92,36 @@ void usart_setup(void)
 	usart_enable(USART1);
 }
 
-unsigned char registers[0x100];
-/*
- * Map:
- * 0x00 : CHIP_ID "0x25"
- * 0x40-0x4c : 16 bit touch data
- * 0x80-0x91 : RGB LEDs values
- * 0x92 : Commit the RGB LEDs (write anything)
- *
- */
-uint8_t *ws2812_colors = registers + 0X80;
-
 #define CHIP_ID 0x25
 
-void registers_init(void) {
-	registers[0x00] = CHIP_ID;
-}
+void handle_i2c_bufs(void) {
+	uint8_t command = i2c_rx_buf[0];
+	uint8_t *args = i2c_rx_buf + 1;
 
-void registers_read_callback(uint16_t address) {
-	//printf("r 0x%04x==0x%02x\n", address, registers[address]);
-}
-void registers_write_callback(uint16_t address) {
-// 	printf("w 0x%04x:0x%02x\n", address, registers[address]);
-	if (address == 0x92) {
-// 		printf("set leds");
-		ws2812_sendarray(ws2812_colors,6*3);
+	switch (command) {
+		case 0x00:
+			i2c_tx_buf[0] = CHIP_ID;
+			break;
+
+		case 0x01:
+			memcpy(i2c_tx_buf, GIT_HASH, strlen(GIT_HASH));
+			break;
+
+		case 0x02:
+			memcpy(i2c_tx_buf, COMPILE_TIME, strlen(COMPILE_TIME));
+			break;
+
+		case 0x10:
+			touch_read();
+			printf("%5u %5u %5u\n", value[0], value[1], value[2]);
+			((uint16_t*)i2c_tx_buf)[0] = value[0];
+			((uint16_t*)i2c_tx_buf)[1] = value[1];
+			((uint16_t*)i2c_tx_buf)[2] = value[2];
+			break;
+
+		case 0x20:
+			ws2812_sendarray(i2c_rx_buf,6*3);
+			break;
 	}
 }
 
@@ -125,13 +131,12 @@ int main(void)
 	systick_setup();
 	usart_setup();
 	gpio_setup();
-	registers_init();
 	touch_init();
 
 	gpio_set LED_GREEN;
 	printf("\n\nGuitar Fret Discovery Board\n");
-	printf("Compiled %s\n", COMPILE_TIME);
 	printf("Version %s\n", GIT_HASH);
+	printf("Compiled %s\n", COMPILE_TIME);
 	msleep(100);
 
 	i2c_setup();
@@ -146,9 +151,6 @@ int main(void)
 
 // 		touch_read();
 // 		printf("%5u %5u %5u\n", value[0], value[1], value[2]);
-// 		*((uint16_t *) (registers + 0x40)) = value[0];
-// 		*((uint16_t *) (registers + 0x42)) = value[1];
-// 		*((uint16_t *) (registers + 0x44)) = value[2];
 //
 // 		if ((value[0]*140/100)>140)
 // 			gpio_set LED_RED;

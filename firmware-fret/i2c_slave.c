@@ -1,7 +1,5 @@
 #include <libopencm3/stm32/i2c.h>
 
-#include "registers.h"
-
 #define I2C_SLAVE_ADDRESS 0x25
 #define I2C_BUS I2C1
 #define I2C_PIN_PORT GPIOB
@@ -57,9 +55,12 @@ void i2c_setup(void)
 	nvic_enable_irq(NVIC_I2C1_IRQ);
 }
 
-//used to count the first 2 bytes of the address
-uint16_t i2c_registers_address_bytes = 0;
-uint16_t i2c_registers_address;
+void handle_i2c_bufs(void);
+
+uint8_t i2c_rx_buf[128];
+uint8_t i2c_rx_bytes;
+uint8_t i2c_tx_buf[128];
+uint8_t i2c_tx_bytes;
 
 void i2c1_isr(void) {
 	//WARNING: prints in here are a bad idea
@@ -72,44 +73,42 @@ void i2c1_isr(void) {
 	if (isr & I2C_ISR_RXNE) {
 		//do this first so we don't lose a char if other events are happening
 		volatile uint8_t byte = I2C_RXDR(I2C_BUS);
-
-
-		if (i2c_registers_address_bytes < 2) {
-			i2c_registers_address >>= 8;
-			i2c_registers_address |= byte << 8;
-			i2c_registers_address_bytes++;
-		} else {
-			i2c_registers_address_bytes = 2;
-			/* we have an address to write at already! */
-			registers[i2c_registers_address++] = byte;
-			registers_write_callback(i2c_registers_address-1);
-		}
+		i2c_rx_buf[i2c_rx_bytes++] = byte;
+// 		printf("rx 0x%02x\n", byte);
 	}
 
 	if (isr & I2C_ISR_ADDR) {
 // 		printf("\n");
 // 		printf("\naddress match 0x%04lx dir%d\n", I2C_ISR_ADDCODE_VALG(isr), !!(isr & I2C_ISR_DIR));
 		I2C_ICR(I2C_BUS) = I2C_ICR_ADDRCF;
-		i2c_registers_address_bytes = 0;
+		i2c_rx_bytes = 0;
+		i2c_tx_bytes = 0;
 		if (isr & I2C_ISR_DIR) {
 			I2C_ISR(I2C_BUS) |= I2C_ISR_TXE;
 		}
 	}
 
-	if (isr & (I2C_ISR_TXIS | I2C_ISR_DIR)) {
+	if ((isr & (I2C_ISR_TXIS | I2C_ISR_DIR)) == (I2C_ISR_TXIS | I2C_ISR_DIR)) {
 		if(!(isr & I2C_ISR_STOPF)) {
-			volatile uint8_t byte = registers[i2c_registers_address++];
+			volatile uint8_t byte = i2c_tx_buf[i2c_tx_bytes++];
 			I2C_TXDR(I2C_BUS) = byte;
-			registers_read_callback(i2c_registers_address-1);
+// 			printf("t");
 		}
+// 		printf("i0x%08lx\n", isr);
 	}
 
 	if (isr & I2C_ISR_STOPF) {
+// 		printf("stop dir%d\n", !!(isr & I2C_ISR_DIR));
+		if(!(isr & I2C_ISR_DIR)) {
+			handle_i2c_bufs();
+		}
+
 		I2C_ICR(I2C_BUS) = I2C_ICR_STOPCF;
 		I2C_TXDR(I2C_BUS) = 0; //hack to avoid another txis interrupt at the end
 	}
 
 	if (isr & I2C_ISR_NACKF) {
+// 		printf("nack\n");
 		I2C_ICR(I2C_BUS) = I2C_ICR_NACKCF;
 	}
 
