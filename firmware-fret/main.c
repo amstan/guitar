@@ -138,31 +138,34 @@ int main(void)
 
 	ws2812_sendarray(ws2812_colors,6*3);
 
+	i2c_tx_buf[0] = 0xaa;
+	i2c_tx_buf[1] = 0x55;
+
 	while(1){
 		printf(".");
 
-		touch_read();
-		printf("%5u %5u %5u\n", value[0], value[1], value[2]);
-		*((uint16_t *) (registers + 0x40)) = value[0];
-		*((uint16_t *) (registers + 0x42)) = value[1];
-		*((uint16_t *) (registers + 0x44)) = value[2];
+// 		touch_read();
+// 		printf("%5u %5u %5u\n", value[0], value[1], value[2]);
+// 		*((uint16_t *) (registers + 0x40)) = value[0];
+// 		*((uint16_t *) (registers + 0x42)) = value[1];
+// 		*((uint16_t *) (registers + 0x44)) = value[2];
+//
+// 		if ((value[0]*140/100)>140)
+// 			gpio_set LED_RED;
+// 		else
+// 			gpio_clear LED_RED;
+//
+// 		if (value[1]>140)
+// 			gpio_set LED_ORANGE;
+// 		else
+// 			gpio_clear LED_ORANGE;
+//
+// 		if (value[2]>140)
+// 			gpio_set LED_GREEN;
+// 		else
+// 			gpio_clear LED_GREEN;
 
-		if ((value[0]*140/100)>140)
-			gpio_set LED_RED;
-		else
-			gpio_clear LED_RED;
-
-		if (value[1]>140)
-			gpio_set LED_ORANGE;
-		else
-			gpio_clear LED_ORANGE;
-
-		if (value[2]>140)
-			gpio_set LED_GREEN;
-		else
-			gpio_clear LED_GREEN;
-
-		msleep(10);
+		msleep(100);
 	}
 
 	return 0;
