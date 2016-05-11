@@ -1,4 +1,4 @@
-from periphery import *
+#from periphery import *
 
 DEFAULT_I2C_ADDRESS = 0x25
 
@@ -68,6 +68,7 @@ def dynamic_led_test(fret):
 		[[0,x,255-x] for x in range(255)] +
 		[[x,255-x,0] for x in range(255)]
 	)
+	print colors
 	#colors=colors[::6] #faster
 	#colors = [[b,b,b] for r,g,b in colors] #white glow
 	colors = [[r//5,g//5,b//5] for r,g,b in colors] #lower brightness
