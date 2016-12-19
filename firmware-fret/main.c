@@ -75,8 +75,7 @@ void handle_i2c_bufs(void) {
 
 		/* Touch */
 		case 0x10:
-			for(unsigned int t = 0; t < 6; t++)
-				((uint16_t*)i2c_tx_buf)[t] = touch_values[t];
+			memcpy(i2c_tx_buf, touch_values, sizeof(touch_values));
 			break;
 
 		/* LEDs */
