@@ -20,8 +20,18 @@
 /* Optional features */
 #define CONFIG_STM_HWTIMER32
 #define CONFIG_HW_CRC
+#define CONFIG_I2C
+#define CONFIG_I2C_SLAVE
 #undef CONFIG_WATCHDOG_HELP
 #undef CONFIG_LID_SWITCH
+
+#define I2C_PORT_SLAVE  0
+#define I2C_PORT_EC I2C_PORT_SLAVE
+
+/* slave address for host commands */
+#ifdef HAS_TASK_HOSTCMD
+#define CONFIG_HOSTCMD_I2C_SLAVE_ADDR 0x3c
+#endif
 
 /*
  * Allow dangerous commands all the time, since we don't have a write protect
