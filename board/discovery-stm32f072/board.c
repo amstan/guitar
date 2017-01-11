@@ -8,6 +8,8 @@
 #include "ec_version.h"
 #include "gpio.h"
 #include "hooks.h"
+#include "host_command.h"
+#include "i2c.h"
 #include "queue_policies.h"
 #include "registers.h"
 #include "spi.h"
@@ -36,6 +38,13 @@ void button_event(enum gpio_signal signal)
 
 	count++;
 }
+
+/* I2C ports */
+const struct i2c_port_t i2c_ports[] = {
+	{"slave",  I2C_PORT_SLAVE, 100,
+		GPIO_SLAVE_I2C_SCL, GPIO_SLAVE_I2C_SDA},
+};
+const unsigned int i2c_ports_used = ARRAY_SIZE(i2c_ports);
 
 /******************************************************************************
  * Initialize board.

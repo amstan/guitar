@@ -16,6 +16,13 @@ GPIO(LED_D, PIN(C, 7), GPIO_OUT_LOW)
 GPIO(LED_L, PIN(C, 8), GPIO_OUT_LOW)
 GPIO(LED_R, PIN(C, 9), GPIO_OUT_LOW)
 
+/*
+ * I2C pins should be configured as inputs until I2C module is
+ * initialized. This will avoid driving the lines unintentionally.
+ */
+GPIO(SLAVE_I2C_SCL,       PIN(B, 6), GPIO_INPUT)
+GPIO(SLAVE_I2C_SDA,       PIN(B, 7), GPIO_INPUT)
+
 ALTERNATE(PIN_MASK(B, 0xE000), 0, MODULE_SPI_FLASH, 0)
 
 /* Unimplemented signals which we need to emulate for now */
@@ -23,3 +30,4 @@ UNIMPLEMENTED(ENTERING_RW)
 UNIMPLEMENTED(WP_L)
 
 ALTERNATE(PIN_MASK(A, 0x0600), 1, MODULE_UART, 0) /* USART1: PA09/PA10 */
+ALTERNATE(PIN_MASK(B, 0x00c0), 1, MODULE_I2C, 0)  /* I2C Slave:PA14/15 */
