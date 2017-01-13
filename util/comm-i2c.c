@@ -26,6 +26,7 @@
 #define I2C_MAX_ADAPTER  32
 #define I2C_NODE "/dev/i2c-%d"
 
+#define DEBUG 1
 #ifdef DEBUG
 #define debug(format, arg...) printf(format, ##arg)
 #else
@@ -42,19 +43,169 @@ static int i2c_fd = -1;
  *
  */
 static int ec_command_i2c(int command, int version,
+				    const void *outdata, int outsize,
+				    void *indata, int insize)
+{
+	int ret, i;
+	int resp_len;
+	struct ec_host_request rq;
+	struct ec_host_response rs;
+	static uint8_t req_buf[EC_LPC_HOST_PACKET_SIZE];
+	static uint8_t resp_buf[EC_LPC_HOST_PACKET_SIZE];
+	uint8_t sum = 0;
+	const uint8_t *c;
+	uint8_t *d;
+	struct i2c_msg i2c_msg[2];
+	struct i2c_rdwr_ioctl_data data;
+
+	/* Fail if output size is too big */
+	if (outsize + sizeof(rq) > EC_LPC_HOST_PACKET_SIZE)
+		return -EC_RES_REQUEST_TRUNCATED;
+
+	/* Fill in request packet */
+	rq.struct_version = EC_HOST_REQUEST_VERSION;
+	rq.checksum = 0;
+	rq.command = command;
+	rq.command_version = version;
+	rq.reserved = 0;
+	rq.data_len = outsize;
+
+	/* Copy data and start checksum */
+	for (i = 0, c = (const uint8_t *)outdata; i < outsize; i++, c++) {
+		req_buf[sizeof(rq) + 1 + i] = *c;
+		sum += *c;
+	}
+
+	/* Finish checksum */
+	for (i = 0, c = (const uint8_t *)&rq; i < sizeof(rq); i++, c++)
+		sum += *c;
+
+	/* Write checksum field so the entire packet sums to 0 */
+	rq.checksum = (uint8_t)(-sum);
+
+	/* Copy header */
+	for (i = 0, c = (const uint8_t *)&rq; i < sizeof(rq); i++, c++)
+		req_buf[1 + i] = *c;
+
+	/* Set command to use protocol v3 */
+	req_buf[0] = EC_COMMAND_PROTOCOL_3;
+
+	/*
+	 * Transmit all data and receive 2 bytes for return value and response
+	 * length.
+	 */
+// 	ret = i2c_xfer(I2C_PORT_PD_MCU, CONFIG_USB_PD_I2C_SLAVE_ADDR,
+// 			&req_buf[0], outsize + sizeof(rq) + 1, &resp_buf[0],
+// 			2, I2C_XFER_START);
+	data.msgs = i2c_msg;
+	data.nmsgs = 2;
+	i2c_msg[0].addr = EC_I2C_ADDR;
+	i2c_msg[0].flags = 0;
+	i2c_msg[0].buf = (char *)req_buf;
+	i2c_msg[0].len = outsize + sizeof(rq) + 1;
+	i2c_msg[1].addr = EC_I2C_ADDR;
+	i2c_msg[1].flags = I2C_M_RD;
+	i2c_msg[1].buf = (char *)resp_buf;
+	i2c_msg[1].len = 2;
+	ret = ioctl(i2c_fd, I2C_RDWR, &data);
+	if (ret < 0) {
+		fprintf(stderr, "i2c transfer 1 failed: %d (err: %d)\n",
+			ret, errno);
+		return -EC_RES_ERROR;
+	}
+
+	resp_len = resp_buf[1];
+
+// 	if (resp_len > (insize + sizeof(rs))) {
+// 		/* Do a dummy read to generate stop condition */
+// 		i2c_xfer(I2C_PORT_PD_MCU, CONFIG_USB_PD_I2C_SLAVE_ADDR,
+// 			0, 0, &resp_buf[2], 1, I2C_XFER_STOP);
+// 		debug("[response size is too large %d > %d]\n",
+// 				resp_len, insize + sizeof(rs));
+// 		return -EC_RES_RESPONSE_TOO_BIG;
+// 	}
+
+	/* Receive remaining data */
+// 	ret = i2c_xfer(I2C_PORT_PD_MCU, CONFIG_USB_PD_I2C_SLAVE_ADDR, 0, 0,
+// 			&resp_buf[2], resp_len, I2C_XFER_STOP);
+	data.msgs = i2c_msg;
+	data.nmsgs = 1;
+	i2c_msg[0].addr = EC_I2C_ADDR;
+	i2c_msg[0].flags = I2C_M_RD;
+	i2c_msg[0].buf = (char *)resp_buf + 2;
+	i2c_msg[0].len = resp_len;
+	ret = ioctl(i2c_fd, I2C_RDWR, &data);
+	if (ret < 0) {
+		fprintf(stderr, "i2c transfer 2 failed: %d (err: %d)\n",
+			ret, errno);
+		return -EC_RES_ERROR;
+	}
+
+	/* Check for host command error code */
+	ret = resp_buf[0];
+	if (ret) {
+		debug("[command 0x%02x returned error %d]\n", command,
+			ret);
+		return -ret;
+	}
+
+	/* Read back response header and start checksum */
+	sum = 0;
+	for (i = 0, d = (uint8_t *)&rs; i < sizeof(rs); i++, d++) {
+		*d = resp_buf[i + 2];
+		sum += *d;
+	}
+
+	if (rs.struct_version != EC_HOST_RESPONSE_VERSION) {
+		debug("[PD response version mismatch]\n");
+		return -EC_RES_INVALID_RESPONSE;
+	}
+
+	if (rs.reserved) {
+		debug("[PD response reserved != 0]\n");
+		return -EC_RES_INVALID_RESPONSE;
+	}
+
+	if (rs.data_len > insize) {
+		debug("[PD returned too much data]\n");
+		return -EC_RES_RESPONSE_TOO_BIG;
+	}
+
+	/* Read back data and update checksum */
+	resp_len -= sizeof(rs);
+	for (i = 0, d = (uint8_t *)indata; i < resp_len; i++, d++) {
+		*d = resp_buf[sizeof(rs) + i + 2];
+		sum += *d;
+	}
+
+
+	if ((uint8_t)sum) {
+		debug("[command 0x%02x bad checksum returned: "
+			"%d]\n", command, sum);
+		return -EC_RES_INVALID_CHECKSUM;
+	}
+
+	/* Return output buffer size */
+	return resp_len;
+}
+
+static int ec_command_i2c_old(int command, int version,
 			  const void *outdata, int outsize,
 			  void *indata, int insize)
 {
 	struct i2c_rdwr_ioctl_data data;
 	int ret = -1;
 	int i;
-	int req_len;
-	uint8_t *req_buf = NULL;
+	struct ec_host_request rq;
+	static uint8_t req_buf[EC_LPC_HOST_PACKET_SIZE];
+// 	static uint8_t resp_buf[EC_LPC_HOST_PACKET_SIZE];
+// 	int resp_len = sizeof(resp_buf);
 	int resp_len;
 	uint8_t *resp_buf = NULL;
+
 	const uint8_t *c;
 	uint8_t *d;
-	uint8_t sum;
+	uint8_t sum = 0;
 	struct i2c_msg i2c_msg[2];
 
 	if (version > 1) {
@@ -83,26 +234,37 @@ static int ec_command_i2c(int command, int version,
 	 * allocate larger packet
 	 * (version, command, size, ..., checksum)
 	 */
-	req_len = outsize + EC_PROTO2_REQUEST_OVERHEAD;
-	req_buf = calloc(1, req_len);
-	if (!req_buf)
-		goto done;
-	i2c_msg[0].len = req_len;
+	rq.struct_version = EC_HOST_REQUEST_VERSION;
+	rq.checksum = 0;
+	rq.command = command;
+	rq.command_version = version;
+	rq.reserved = 0;
+	rq.data_len = outsize;
+
+		/* Copy data and start checksum */
+	for (i = 0, c = (const uint8_t *)outdata; i < outsize; i++, c++) {
+		req_buf[sizeof(rq) + 1 + i] = *c;
+		sum += *c;
+	}
+
+	/* Finish checksum */
+	for (i = 0, c = (const uint8_t *)&rq; i < sizeof(rq); i++, c++)
+		sum += *c;
+
+	/* Write checksum field so the entire packet sums to 0 */
+	rq.checksum = (uint8_t)(-sum);
+
+	/* Copy header */
+	for (i = 0, c = (const uint8_t *)&rq; i < sizeof(rq); i++, c++)
+		req_buf[1 + i] = *c;
+
+	/* Set command to use protocol v3 */
+	req_buf[0] = EC_COMMAND_PROTOCOL_3;
+
+	i2c_msg[0].len = outsize + sizeof(rq) + 1;
 	i2c_msg[0].buf = (char *)req_buf;
-	req_buf[0] = version + EC_CMD_VERSION0;
-	req_buf[1] = command;
-	req_buf[2] = outsize;
 
 	debug("i2c req %02x:", command);
-	sum = req_buf[0] + req_buf[1] + req_buf[2];
-	/* copy message payload and compute checksum */
-	for (i = 0, c = outdata; i < outsize; i++, c++) {
-		req_buf[i + 3] = *c;
-		sum += *c;
-		debug(" %02x", *c);
-	}
-	debug(", sum=%02x\n", sum);
-	req_buf[req_len - 1] = sum;
 
 	/*
 	 * allocate larger packet
@@ -165,8 +327,6 @@ static int ec_command_i2c(int command, int version,
 done:
 	if (resp_buf)
 		free(resp_buf);
-	if (req_buf)
-		free(req_buf);
 	return ret;
 }
 
@@ -176,6 +336,8 @@ int comm_init_i2c(void)
 	char buffer[64];
 	FILE *f;
 	int i;
+
+	(void)ec_command_i2c_old;
 
 	/* find the device number based on the adapter name */
 	for (i = 0; i < I2C_MAX_ADAPTER; i++) {
