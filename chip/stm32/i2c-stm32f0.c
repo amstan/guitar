@@ -345,8 +345,8 @@ static void i2c_event_handler(int port)
 		if (rx_pending && ADDR_IS_TCPC(addr))
 			i2c_process_tcpc_command(0, addr, buf_idx);
 #endif
-		rx_pending = 0;
-		tx_pending = 0;
+// 		rx_pending = 0;
+// 		tx_pending = 0;
 
 		/* Make sure TXIS interrupt is disabled */
 		STM32_I2C_CR1(port) &= ~STM32_I2C_CR1_TXIE;
