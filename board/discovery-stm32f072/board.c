@@ -10,6 +10,7 @@
 #include "hooks.h"
 #include "host_command.h"
 #include "i2c.h"
+#include "lightbar.h"
 #include "queue_policies.h"
 #include "registers.h"
 #include "spi.h"

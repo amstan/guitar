@@ -15,6 +15,7 @@ GPIO(LED_U, PIN(C, 6), GPIO_OUT_LOW)
 GPIO(LED_D, PIN(C, 7), GPIO_OUT_LOW)
 GPIO(LED_L, PIN(C, 8), GPIO_OUT_LOW)
 GPIO(LED_R, PIN(C, 9), GPIO_OUT_LOW)
+GPIO(LED_WS2812, PIN(C, 10), GPIO_OUT_LOW)
 
 /*
  * I2C pins should be configured as inputs until I2C module is
