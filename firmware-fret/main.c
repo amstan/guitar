@@ -151,7 +151,14 @@ int main(void)
 		if (demo_mode) {
 			for(unsigned int led = 0; led < 6; led++) {
 				for(unsigned int c = 0; c < 3; c++) {
-					ws2812_colors[led*3 + c] = rainbow[led][c] * touch_values[led] / 256;
+					uint8_t new_value = rainbow[led][c] * touch_values[led] / 256;
+					uint8_t step = 7;
+					if (ws2812_colors[led*3 + c] > 2) {
+						ws2812_colors[led*3 + c] = ((uint16_t)ws2812_colors[led*3 + c]) * 85 / 100;
+					} else
+						ws2812_colors[led*3 + c] = 0;
+					if (ws2812_colors[led*3 + c] < new_value)
+						ws2812_colors[led*3 + c] = new_value;
 				}
 			}
 			ws2812_sendarray(ws2812_colors,6*3);
