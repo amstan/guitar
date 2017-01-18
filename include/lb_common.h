@@ -12,7 +12,7 @@
 #include "ec_commands.h"
 
 /* How many (logical) LEDs do we have? */
-#define NUM_LEDS 4
+#define NUM_LEDS 6
 
 /* Set the color of one LED (or all if the LED number is too large) */
 void lb_set_rgb(unsigned int led, int red, int green, int blue);

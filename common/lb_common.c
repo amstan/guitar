@@ -95,8 +95,8 @@
 #include "common.h"
 #include "console.h"
 #include "ec_commands.h"
-#include "i2c.h"
 #include "lb_common.h"
+#include "chip/stm32/registers.h"
 #include "util.h"
 
 /* Console output macros */
@@ -104,112 +104,6 @@
 #define CPRINTF(format, args...) cprintf(CC_LIGHTBAR, format, ## args)
 #define CPRINTS(format, args...) cprints(CC_LIGHTBAR, format, ## args)
 
-/******************************************************************************/
-/* How to talk to the controller */
-/******************************************************************************/
-
-/* Since there's absolutely nothing we can do about it if an I2C access
- * isn't working, we're completely ignoring any failures. */
-
-static const uint8_t i2c_addr[] = { 0x54, 0x56 };
-
-static inline void controller_write(int ctrl_num, uint8_t reg, uint8_t val)
-{
-	uint8_t buf[2];
-
-	buf[0] = reg;
-	buf[1] = val;
-	ctrl_num = ctrl_num % ARRAY_SIZE(i2c_addr);
-	i2c_xfer(I2C_PORT_LIGHTBAR, i2c_addr[ctrl_num], buf, 2, 0, 0,
-		 I2C_XFER_SINGLE);
-}
-
-static inline uint8_t controller_read(int ctrl_num, uint8_t reg)
-{
-	uint8_t buf[1];
-	int rv;
-
-	ctrl_num = ctrl_num % ARRAY_SIZE(i2c_addr);
-	rv = i2c_xfer(I2C_PORT_LIGHTBAR, i2c_addr[ctrl_num], &reg, 1, buf, 1,
-		      I2C_XFER_SINGLE);
-	return rv ? 0 : buf[0];
-}
-
-/******************************************************************************/
-/* Controller details. We have an ADP8861 and and ADP8863, but we can treat
- * them identically for our purposes */
-/******************************************************************************/
-
-#ifdef BOARD_BDS
-/* We need to limit the total current per ISC to no more than 20mA (5mA per
- * color LED, but we have four LEDs in parallel on each ISC). Any more than
- * that runs the risk of damaging the LED component. A value of 0x67 is as high
- * as we want (assuming Square Law), but the blue LED is the least bright, so
- * I've lowered the other colors until they all appear approximately equal
- * brightness when full on. That's still pretty bright and a lot of current
- * drain on the battery, so we'll probably rarely go that high. */
-#define MAX_RED   0x5c
-#define MAX_GREEN 0x30
-#define MAX_BLUE  0x67
-#endif
-#if defined(BOARD_SAMUS) || defined(BOARD_RYU)
-/* Samus uses completely different LEDs, so the numbers are different. The
- * Samus LEDs can handle much higher currents, but these constants were
- * calibrated to provide uniform intensity at the level used by Link.
- * See crosbug.com/p/33017 before making any changes. */
-#define MAX_RED   0x34
-#define MAX_GREEN 0x2c
-#define MAX_BLUE  0x40
-#endif
-#ifdef BOARD_HOST
-/* For testing only */
-#define MAX_RED   0xff
-#define MAX_GREEN 0xff
-#define MAX_BLUE  0xff
-#endif
-
-/* How we'd like to see the driver chips initialized. The controllers have some
- * auto-cycling capability, but it's not much use for our purposes. For now,
- * we'll just control all color changes actively. */
-struct initdata_s {
-	uint8_t reg;
-	uint8_t val;
-};
-
-static const struct initdata_s init_vals[] = {
-	{0x04, 0x00},				/* no backlight function */
-	{0x05, 0x3f},				/* xRGBRGB per chip */
-	{0x0f, 0x01},				/* square law looks better */
-	{0x10, 0x3f},				/* enable independent LEDs */
-	{0x11, 0x00},				/* no auto cycling */
-	{0x12, 0x00},				/* no auto cycling */
-	{0x13, 0x00},				/* instant fade in/out */
-	{0x14, 0x00},				/* not using LED 7 */
-	{0x15, 0x00},				/* current for LED 6 (blue) */
-	{0x16, 0x00},				/* current for LED 5 (red) */
-	{0x17, 0x00},				/* current for LED 4 (green) */
-	{0x18, 0x00},				/* current for LED 3 (blue) */
-	{0x19, 0x00},				/* current for LED 2 (red) */
-	{0x1a, 0x00},				/* current for LED 1 (green) */
-};
-
-/* Controller register lookup tables. */
-static const uint8_t led_to_ctrl[] = { 1, 1, 0, 0 };
-#ifdef BOARD_BDS
-static const uint8_t led_to_isc[] = { 0x18, 0x15, 0x18, 0x15 };
-#endif
-#ifdef BOARD_SAMUS
-static const uint8_t led_to_isc[] = { 0x15, 0x18, 0x15, 0x18 };
-#endif
-#if defined(BOARD_RYU)
-static const uint8_t led_to_isc[] = { 0x18, 0x15, 0x18, 0x15 };
-#endif
-#ifdef BOARD_HOST
-/* For testing only */
-static const uint8_t led_to_isc[] = { 0x15, 0x18, 0x15, 0x18 };
-#endif
-
-/* Scale 0-255 into max value */
 static inline uint8_t scale_abs(int val, int max)
 {
 	return (val * max)/255;
@@ -228,20 +122,16 @@ static inline uint8_t scale(int val, int max)
 	return scale_abs((val * brightness)/255, max);
 }
 
+#include "light_ws2812_cortex.c"
+
 /* Helper function to set one LED color and remember it for later */
-static void setrgb(int led, int red, int green, int blue)
+static void refresh_leds(void)
 {
-	int ctrl, bank;
-	current[led][0] = red;
-	current[led][1] = green;
-	current[led][2] = blue;
-	ctrl = led_to_ctrl[led];
-	bank = led_to_isc[led];
-	i2c_lock(I2C_PORT_LIGHTBAR, 1);
-	controller_write(ctrl, bank, scale(blue, MAX_BLUE));
-	controller_write(ctrl, bank+1, scale(red, MAX_RED));
-	controller_write(ctrl, bank+2, scale(green, MAX_GREEN));
-	i2c_lock(I2C_PORT_LIGHTBAR, 0);
+	volatile int i;
+	asm volatile("cpsid i");
+	ws2812_sendarray((uint8_t*)current, sizeof(current));
+	asm volatile("cpsie i");
+	for (i = 0; i < 200; i++);
 }
 
 /* LEDs are numbered 0-3, RGB values should be in 0-255.
@@ -249,11 +139,19 @@ static void setrgb(int led, int red, int green, int blue)
 void lb_set_rgb(unsigned int led, int red, int green, int blue)
 {
 	int i;
-	if (led >= NUM_LEDS)
-		for (i = 0; i < NUM_LEDS; i++)
-			setrgb(i, red, green, blue);
-	else
-		setrgb(led, red, green, blue);
+	if (led >= NUM_LEDS) {
+		for (i = 0; i < NUM_LEDS; i++) {
+			current[i][0] = green;
+			current[i][1] = red;
+			current[i][2] = blue;
+		}
+		refresh_leds();
+	} else {
+		current[led][0] = green;
+		current[led][1] = red;
+		current[led][2] = blue;
+		refresh_leds();
+	}
 }
 
 /* Get current LED values, if the LED number is in range. */
@@ -262,8 +160,8 @@ int lb_get_rgb(unsigned int led, uint8_t *red, uint8_t *green, uint8_t *blue)
 	if (led < 0 || led >= NUM_LEDS)
 		return EC_RES_INVALID_PARAM;
 
-	*red = current[led][0];
-	*green = current[led][1];
+	*green = current[led][0];
+	*red = current[led][1];
 	*blue = current[led][2];
 
 	return EC_RES_SUCCESS;
@@ -272,11 +170,12 @@ int lb_get_rgb(unsigned int led, uint8_t *red, uint8_t *green, uint8_t *blue)
 /* Change current display brightness (0-255) */
 void lb_set_brightness(unsigned int newval)
 {
-	int i;
+// 	int i;
 	CPRINTS("LB_bright 0x%02x", newval);
 	brightness = newval;
-	for (i = 0; i < NUM_LEDS; i++)
-		setrgb(i, current[i][0], current[i][1], current[i][2]);
+// 	for (i = 0; i < NUM_LEDS; i++)
+// 		setrgb(i, current[i][0], current[i][1], current[i][2]);
+	refresh_leds();
 }
 
 /* Get current display brightness (0-255) */
@@ -288,72 +187,59 @@ uint8_t lb_get_brightness(void)
 /* Initialize the controller ICs after reset */
 void lb_init(int use_lock)
 {
-	int i;
-
-	CPRINTF("[%T LB_init_vals ");
-	for (i = 0; i < ARRAY_SIZE(init_vals); i++) {
-		CPRINTF("%c", '0' + i % 10);
-		if (use_lock)
-			i2c_lock(I2C_PORT_LIGHTBAR, 1);
-		controller_write(0, init_vals[i].reg, init_vals[i].val);
-		controller_write(1, init_vals[i].reg, init_vals[i].val);
-		if (use_lock)
-			i2c_lock(I2C_PORT_LIGHTBAR, 0);
-	}
-	CPRINTF("]\n");
+	CPRINTF("[%T LB_init");
 	memset(current, 0, sizeof(current));
+	refresh_leds();
+	CPRINTF("]\n");
 }
 
 /* Just go into standby mode. No register values should change. */
 void lb_off(void)
 {
 	CPRINTS("LB_off");
-	i2c_lock(I2C_PORT_LIGHTBAR, 1);
-	controller_write(0, 0x01, 0x00);
-	controller_write(1, 0x01, 0x00);
-	i2c_lock(I2C_PORT_LIGHTBAR, 0);
+	memset(current, 0, sizeof(current));
+	refresh_leds();
 }
 
 /* Come out of standby mode. */
 void lb_on(void)
 {
 	CPRINTS("LB_on");
-	i2c_lock(I2C_PORT_LIGHTBAR, 1);
-	controller_write(0, 0x01, 0x20);
-	controller_write(1, 0x01, 0x20);
-	i2c_lock(I2C_PORT_LIGHTBAR, 0);
+	refresh_leds();
 }
 
-static const uint8_t dump_reglist[] = {
-	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-	0x08, 0x09, 0x0a,			  0x0f,
-	0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
-	0x18, 0x19, 0x1a
-};
+// static const uint8_t dump_reglist[] = {
+// 	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+// 	0x08, 0x09, 0x0a,			  0x0f,
+// 	0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+// 	0x18, 0x19, 0x1a
+// };
 
 /* Helper for host command to dump controller registers */
 void lb_hc_cmd_dump(struct ec_response_lightbar *out)
 {
-	int i;
-	uint8_t reg;
-
-	BUILD_ASSERT(ARRAY_SIZE(dump_reglist) ==
-		     ARRAY_SIZE(out->dump.vals));
-
-	for (i = 0; i < ARRAY_SIZE(dump_reglist); i++) {
-		reg = dump_reglist[i];
-		out->dump.vals[i].reg = reg;
-		i2c_lock(I2C_PORT_LIGHTBAR, 1);
-		out->dump.vals[i].ic0 = controller_read(0, reg);
-		out->dump.vals[i].ic1 = controller_read(1, reg);
-		i2c_lock(I2C_PORT_LIGHTBAR, 0);
-	}
+// 	int i;
+// 	uint8_t reg;
+//
+// 	BUILD_ASSERT(ARRAY_SIZE(dump_reglist) ==
+// 		     ARRAY_SIZE(out->dump.vals));
+//
+// 	for (i = 0; i < ARRAY_SIZE(dump_reglist); i++) {
+// 		reg = dump_reglist[i];
+// 		out->dump.vals[i].reg = reg;
+// 		i2c_lock(I2C_PORT_LIGHTBAR, 1);
+// 		out->dump.vals[i].ic0 = controller_read(0, reg);
+// 		out->dump.vals[i].ic1 = controller_read(1, reg);
+// 		i2c_lock(I2C_PORT_LIGHTBAR, 0);
+// 	}
+	//TODO
 }
 
 /* Helper for host command to write controller registers directly */
 void lb_hc_cmd_reg(const struct ec_params_lightbar *in)
 {
-	i2c_lock(I2C_PORT_LIGHTBAR, 1);
-	controller_write(in->reg.ctrl, in->reg.reg, in->reg.value);
-	i2c_lock(I2C_PORT_LIGHTBAR, 0);
+	//TODO
+// 	i2c_lock(I2C_PORT_LIGHTBAR, 1);
+// 	controller_write(in->reg.ctrl, in->reg.reg, in->reg.value);
+// 	i2c_lock(I2C_PORT_LIGHTBAR, 0);
 }
