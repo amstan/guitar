@@ -43,11 +43,11 @@
 #endif
 #ifdef LIGHT_WS2812_STM32
   // This example is for STM32 family
-  #define ws2812_port_set ((uint32_t*)&(STM32_GPIO_BSRR(GPIO_C)))  // Address of the data port register to set the pin
-  #define ws2812_port_clr ((uint32_t*)&(STM32_GPIO_BSRR(GPIO_C))) // Address of the data port register to clear the pin
+  #define ws2812_port_set ((uint32_t*)&(STM32_GPIO_BSRR(gpio_list[GPIO_LED_WS2812].port)))  // Address of the data port register to set the pin
+  #define ws2812_port_clr ((uint32_t*)&(STM32_GPIO_BSRR(gpio_list[GPIO_LED_WS2812].port))) // Address of the data port register to clear the pin
 
-  #define ws2812_mask_set  (1 << 10)   // Bitmask to set the data out pin
-  #define ws2812_mask_clr  (1 << 10 << 16)   // Bitmask to clear the data out pin
+  #define ws2812_mask_set  gpio_list[GPIO_LED_WS2812].mask   // Bitmask to set the data out pin
+  #define ws2812_mask_clr  gpio_list[GPIO_LED_WS2812].mask<<16   // Bitmask to clear the data out pin
 #endif
 ///////////////////////////////////////////////////////////////////////
 // User defined area: Define CPU clock speed

@@ -122,6 +122,7 @@ static inline uint8_t scale(int val, int max)
 	return scale_abs((val * brightness)/255, max);
 }
 
+#include "include/gpio.h"
 #include "light_ws2812_cortex.c"
 
 /* Helper function to set one LED color and remember it for later */
