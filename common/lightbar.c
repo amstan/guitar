@@ -1707,6 +1707,20 @@ DECLARE_HOOK(HOOK_CHIPSET_SHUTDOWN, lightbar_shutdown, HOOK_PRIO_DEFAULT);
 /* Host commands via LPC bus */
 /****************************************************************************/
 
+static int cmd_lightbar_raw(struct host_cmd_handler_args *args)
+{
+	if (args->params_size > (NUM_LEDS * 3))
+		return EC_RES_INVALID_PARAM;
+
+	lb_set_rgb_all(args->params, args->params_size);
+
+	args->response_size = 0;
+	return EC_RES_SUCCESS;
+}
+DECLARE_HOST_COMMAND(EC_CMD_LIGHTBAR_RAW_CMD,
+		     cmd_lightbar_raw,
+		     EC_VER_MASK(0));
+
 static int lpc_cmd_lightbar(struct host_cmd_handler_args *args)
 {
 	const struct ec_params_lightbar *in = args->params;
