@@ -154,6 +154,18 @@ void lb_set_rgb(unsigned int led, int red, int green, int blue)
 	}
 }
 
+
+void lb_set_rgb_all(const uint8_t *ledarray, int length)
+{
+	int i;
+	for (i = 0; i < (length / 3); i++) {
+			current[i][0] = ledarray[i * 3 + 1];
+			current[i][1] = ledarray[i * 3 + 0];
+			current[i][2] = ledarray[i * 3 + 2];
+	}
+	refresh_leds();
+}
+
 /* Get current LED values, if the LED number is in range. */
 int lb_get_rgb(unsigned int led, uint8_t *red, uint8_t *green, uint8_t *blue)
 {

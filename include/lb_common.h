@@ -14,6 +14,8 @@
 /* How many (logical) LEDs do we have? */
 #define NUM_LEDS 6
 
+/* Set the color of all LEDs at once */
+void lb_set_rgb_all(const uint8_t *ledarray, int length);
 /* Set the color of one LED (or all if the LED number is too large) */
 void lb_set_rgb(unsigned int led, int red, int green, int blue);
 /* Get the current color of one LED. Fails if the LED number is too large. */

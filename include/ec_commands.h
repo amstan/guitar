@@ -1390,6 +1390,8 @@ struct __ec_align2 ec_response_pwm_get_duty {
  * into a subcommand. We'll make separate structs for subcommands with
  * different input args, so that we know how much to expect.
  */
+#define EC_CMD_LIGHTBAR_RAW_CMD 0x0027
+
 #define EC_CMD_LIGHTBAR_CMD 0x0028
 
 struct __ec_todo_unpacked rgb_s {
