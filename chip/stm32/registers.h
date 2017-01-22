@@ -854,6 +854,7 @@ typedef volatile struct timer_ctlr timer_ctlr_t;
 #define STM32_RCC_APB2RSTR          REG32(STM32_RCC_BASE + 0x0c)
 #define STM32_RCC_APB1RSTR          REG32(STM32_RCC_BASE + 0x10)
 #define STM32_RCC_AHBENR            REG32(STM32_RCC_BASE + 0x14)
+#define STM32_RCC_AHBENR_TSCEN      (1 << 24)
 #define STM32_RCC_APB2ENR           REG32(STM32_RCC_BASE + 0x18)
 #define STM32_RCC_SYSCFGEN          (1 << 0)
 
@@ -1174,6 +1175,18 @@ typedef volatile struct stm32_spi_regs stm32_spi_regs_t;
 #define STM32_SPI_SR_BSY		(1 << 7)
 #define STM32_SPI_SR_FRLVL		(3 << 9)
 #define STM32_SPI_SR_FTLVL		(3 << 11)
+
+/* --- Touch Sensing Controller --- */
+#define BEGIN_DECLS
+#define END_DECLS
+#define STM32_TSC_BASE              0x40024000
+#define TSC_BASE STM32_TSC_BASE
+#define MMIO32 REG32
+
+#include "stm32f0-tsc-registers.h"
+
+#undef BEGIN_DECLS
+#undef END_DECLS
 
 /* --- Debug --- */
 
