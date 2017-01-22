@@ -2281,6 +2281,14 @@ struct __ec_align1 ec_params_usb_charge_set_mode {
 };
 
 /*****************************************************************************/
+/* Captouch */
+
+#define EC_CMD_CAPTOUCH 0x0033
+/*TODO*/
+
+#define EC_CMD_CAPTOUCH_RAW 0x0034
+
+/*****************************************************************************/
 /* Persistent storage for host */
 
 /* Maximum bytes that can be read/written in a single command */

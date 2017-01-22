@@ -1977,6 +1977,9 @@
 #undef CONFIG_TOUCHPAD_I2C_PORT
 #undef CONFIG_TOUCHPAD_I2C_ADDR
 
+/* Enable STM32 touchpad driver */
+#undef CONFIG_TOUCHPAD_STM32
+
 /*****************************************************************************/
 /* TPM-like configuration */
 

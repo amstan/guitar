@@ -42,6 +42,7 @@ CONSOLE_CHANNEL(CC_LIDANGLE,     "lidangle")
 #ifdef HAS_TASK_LIGHTBAR
 CONSOLE_CHANNEL(CC_LIGHTBAR,     "lightbar")
 #endif
+CONSOLE_CHANNEL(CC_CAPTOUCH,     "captouch")
 #ifdef CONFIG_LPC
 CONSOLE_CHANNEL(CC_LPC,          "lpc")
 #endif
