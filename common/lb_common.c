@@ -92,6 +92,8 @@
  *    solid red, etc. Go back to step 2, and repeat until deadline.
  */
 
+#ifdef SECTION_IS_RW
+
 #include "common.h"
 #include "console.h"
 #include "ec_commands.h"
@@ -256,3 +258,5 @@ void lb_hc_cmd_reg(const struct ec_params_lightbar *in)
 // 	controller_write(in->reg.ctrl, in->reg.reg, in->reg.value);
 // 	i2c_lock(I2C_PORT_LIGHTBAR, 0);
 }
+
+#endif

@@ -6,6 +6,8 @@
  * LED controls.
  */
 
+#ifdef SECTION_IS_RW
+
 #ifdef LIGHTBAR_SIMULATION
 #include "simulation.h"
 #else
@@ -2088,3 +2090,5 @@ static int command_lightbar(int argc, char **argv)
 DECLARE_CONSOLE_COMMAND(lightbar, command_lightbar,
 			"[help | COMMAND [ARGS]]",
 			"Get/set lightbar state");
+
+#endif
