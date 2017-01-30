@@ -1,16 +1,24 @@
 #!/usr/bin/env python3
+import collections
 import periphery
 import struct
-
-DEFAULT_I2C_ADDRESS = 0x1e
+import pprint
 
 class ECCommError(Exception):
 	pass
 
+def format_uuid(uuid):
+	return "(" + ', '.join("0x%08x" % x for x in uuid) + ")"
+
+STARTUP_I2C_ADDRESS = 0x1e
+UNKNOWN_DEVICE_I2C_ADDRESS = 0x1f
+STAGING_I2C_ADDRESS = 0x1d
+
 class Fret(object):
-	def __init__(self, i2c, i2c_address = DEFAULT_I2C_ADDRESS):
+	def __init__(self, i2c, i2c_address = STARTUP_I2C_ADDRESS):
 		self.i2c = i2c
 		self._i2c_address = i2c_address
+		self.description = ""
 
 		# Make sure to clean the device buffer before trying to speak
 		self.flush()
@@ -140,44 +148,166 @@ class Fret(object):
 	def set_leds(self, data):
 		self.command(0x0027, data, expected_length = 0)
 
-def demo(fret):
-	def rotate(l,n):
-		return l[n:] + l[:n]
+	def i2c_led_demo(self):
+		def rotate(l,n):
+			return l[n:] + l[:n]
 
-	colors = (
-		[[255-x,0,x] for x in range(255)] +
-		[[0,x,255-x] for x in range(255)] +
-		[[x,255-x,0] for x in range(255)]
-	)
-	#colors = (
-		#[[255,0,255-x] for x in range(255)] +
-		#[[255,x,0] for x in range(255)] +
-		#[[255-x,255,0] for x in range(255)] +
-		#[[0,255,x] for x in range(255)] +
-		#[[0,255-x,255] for x in range(255)] +
-		#[[x,0,255] for x in range(255)]
-	#)
-	colors=colors[::2] #faster
-	#colors = [[b,b,b] for r,g,b in colors] #white glow
+		colors = (
+			[[255-x,0,x] for x in range(255)] +
+			[[0,x,255-x] for x in range(255)] +
+			[[x,255-x,0] for x in range(255)]
+		)
+		#colors = (
+			#[[255,0,255-x] for x in range(255)] +
+			#[[255,x,0] for x in range(255)] +
+			#[[255-x,255,0] for x in range(255)] +
+			#[[0,255,x] for x in range(255)] +
+			#[[0,255-x,255] for x in range(255)] +
+			#[[x,0,255] for x in range(255)]
+		#)
+		colors=colors[::2] #faster
+		#colors = [[b,b,b] for r,g,b in colors] #white glow
 
-	def fix_gamma(x):
-		return int(((x / 255) ** 0.7) * 255)
-	colors = [[fix_gamma(ch) for ch in color] for color in colors] #lower brightness
+		def fix_gamma(x):
+			return int(((x / 255) ** 0.7) * 255)
+		colors = [[fix_gamma(ch) for ch in color] for color in colors] #lower brightness
 
-	colors = [[r//10,g//10,b//10] for r,g,b in colors] #lower brightness
+		colors = [[r//10,g//10,b//10] for r,g,b in colors] #lower brightness
 
-	print("Watch the pretty colors!")
-	while True:
-		for j in range(len(colors)):
-			c=rotate(colors,len(colors) - j - 1)[::len(colors)//(6*2)]
-			#for g in range(20):
-				#what if we had more frets(20x slower), was doing touch(2x slower), but increased the i2c speed(10x faster) too
-			fret.set_leds(sum(c,[])[:18])
-			#for g in range(20):
-				#blink test to show the fps
-				#fret.set_leds([0xff] * 18)
+		print("Watch the pretty colors!")
+		while True:
+			for j in range(len(colors)):
+				c=rotate(colors,len(colors) - j - 1)[::len(colors)//(6*2)]
+				#for g in range(20):
+					#what if we had more selfs(20x slower), was doing touch(2x slower), but increased the i2c speed(10x faster) too
+				self.set_leds(sum(c,[])[:18])
+				#for g in range(20):
+					#blink test to show the fps
+					#self.set_leds([0xff] * 18)
+
+	def __repr__(self):
+		return super().__repr__()[:-1] + ", i2c 0x%02x %r>" % (self._i2c_address, self.description)
+
+	def __str__(self):
+		return "Fret at address 0x%02x\nDescription %r\nUUID %s\n%s\n" % (
+			self._i2c_address,
+			self.description,
+			format_uuid(self.uuid),
+			pprint.pformat(self.version)
+		)
+
+	def colorize_address(self):
+		led_data = []
+		for i in reversed(range(6)):
+			led_data += ([1],[20])[int(bool(self.i2c_address & (1 << i)))] * 3
+		self.set_leds(led_data)
+
+
+class FretCollection(collections.UserDict):
+	def __init__(self, i2c):
+		self.i2c = i2c
+		super().__init__()
+
+	def enumerate(self, assignment, extra_scan_addresses=[]):
+		assignment = assignment.copy()
+
+		# Put everything we know so far into the assignment too,
+		# since we have to start from scratch anyway
+		for fret in list(self.values()):
+			# TODO fret.uuid here might be bad
+			# perhaps make uuid cached
+			if fret.uuid not in assignment:
+				assignment[fret.uuid] = (fret.i2c_address, fret.description)
+			del self[fret.i2c_address]
+
+		self.colorize_addresses()
+
+		scan_addresses = [a for a, _ in assignment.values()] + [UNKNOWN_DEVICE_I2C_ADDRESS, STAGING_I2C_ADDRESS] + extra_scan_addresses
+		print("Moving all devices from random addresses [%s] to the startup address 0x%02x:" % (', '.join("0x%02x" % a for a in scan_addresses), STARTUP_I2C_ADDRESS))
+		for address in scan_addresses:
+			print("Scanning address 0x%02x..." % address)
+			while True:
+				try:
+					f = Fret(i2c, i2c_address = address)
+				except periphery.i2c.I2CError:
+					break
+
+				found_uuid = f.uuid
+				print(format_uuid(f.uuid))
+				f.change_i2c_address(STARTUP_I2C_ADDRESS, found_uuid)
+
+		self.colorize_addresses()
+
+		print("\nScanning at startup address 0x%02x..." % (STARTUP_I2C_ADDRESS))
+		while True:
+			try:
+				# Try to enumerate at the search location
+				f = Fret(i2c, i2c_address = STARTUP_I2C_ADDRESS)
+			except periphery.i2c.I2CError:
+				break
+
+			# If we find one, check its uuid and change it's address to the proper one
+			found_uuid = f.uuid
+
+			try:
+				# Grab stuff from the database for this uuid
+				address, description = assignment.pop(found_uuid)
+			except KeyError:
+				# We might not know about it
+				print("Unknown device!")
+				address = UNKNOWN_DEVICE_I2C_ADDRESS
+				f.description = "Unknown"
+				f.change_i2c_address(UNKNOWN_DEVICE_I2C_ADDRESS, found_uuid)
+			else:
+				# If we know what it is, save it in the database
+				f.description = description
+				self[address] = f
+				f.change_i2c_address(address, found_uuid)
+				f.colorize_address()
+
+			print(f)
+
+		self.colorize_addresses()
+
+		for uuid, (address, description) in assignment.items():
+			print("Could not find %s %r who was supposed to go at address 0x%02x" % (format_uuid(uuid), description, address))
+
+	def colorize_addresses(self):
+		try:
+			startup_frets = Fret(i2c, i2c_address = STARTUP_I2C_ADDRESS)
+		except periphery.i2c.I2CError:
+			pass
+		else:
+			startup_frets.set_leds([40, 1, 1,  5, 20, 5] + [1, 2, 1] * 4)
+
+		try:
+			unknown_frets = Fret(i2c, i2c_address = UNKNOWN_DEVICE_I2C_ADDRESS)
+		except periphery.i2c.I2CError:
+			pass
+		else:
+			unknown_frets.set_leds([40, 1, 1,  20, 10, 1] + [2, 1, 1] * 4)
+
+		try:
+			staging_frets = Fret(i2c, i2c_address = STAGING_I2C_ADDRESS)
+		except periphery.i2c.I2CError:
+			pass
+		else:
+			staging_frets.set_leds([40, 1, 1,  1, 10, 10] + [1, 2, 2] * 4)
+
+		for fret in self.values():
+			fret.colorize_address()
+
+	def __str__(self):
+		return '\n'.join("0x%02x: %r" % item for item in self.items())
+	__repr__ = __str__
+
 
 if __name__=="__main__":
 	i2c = periphery.I2C("/dev/i2c-0")
-	fret = Fret(i2c)
-	demo(fret)
+	collection = FretCollection(i2c)
+	device_list = {
+		(0x00430043, 0x46335717, 0x20333539): (0x20, "fret with pins"),
+		(0x00230024, 0x42365712, 0x32353530): (0x21, "discovery 1"),
+		(0x0033003c, 0x42365714, 0x32353530): (0x22, "discovery 2"),
+	}
+	collection.enumerate(device_list)
