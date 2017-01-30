@@ -2281,6 +2281,23 @@ struct __ec_align1 ec_params_usb_charge_set_mode {
 };
 
 /*****************************************************************************/
+/* I2C Auto Address */
+
+#define EC_CMD_UUID 0x0031
+
+struct __ec_align1 ec_response_uuid {
+	uint32_t uuid[3];
+};
+
+#define EC_CMD_I2C_ADDRESS 0x0032
+
+struct __ec_align1 ec_params_i2c_address {
+	uint8_t new_address;
+	/* If we have an uuid only set address if we match */
+	uint32_t uuid[3];
+};
+
+/*****************************************************************************/
 /* Captouch */
 
 #define EC_CMD_CAPTOUCH 0x0033
