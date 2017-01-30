@@ -38,7 +38,7 @@
 
 /* slave address for host commands */
 #ifdef HAS_TASK_HOSTCMD
-#define CONFIG_HOSTCMD_I2C_SLAVE_ADDR (0x25 << 1)
+#define CONFIG_HOSTCMD_I2C_SLAVE_ADDR 0x3c
 #endif
 
 /*
