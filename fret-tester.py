@@ -135,12 +135,10 @@ class Fret(object):
 
 	@property
 	def touch(self):
-		#raws = self.command(0x10, expected_length=6*2)
-		#lsbs=raws[0::2]
-		#msbs=raws[1::2]
+		reply = self.command(0x0034, [])
 
-		#return tuple(msb*256 + lsb for msb, lsb in zip(msbs, lsbs))
-		pass
+		touch_struct = struct.Struct("<" + "H" * (len(reply) // 2))
+		return touch_struct.unpack(reply)
 
 	def set_led(self, i, r, g, b):
 		self.command(0x0028, [0,7, i, r,g,b], expected_length = 0)
@@ -148,7 +146,7 @@ class Fret(object):
 	def set_leds(self, data):
 		self.command(0x0027, data, expected_length = 0)
 
-	def i2c_led_demo(self):
+	def i2c_led_demo(self, touch_source=None):
 		def rotate(l,n):
 			return l[n:] + l[:n]
 
@@ -165,25 +163,35 @@ class Fret(object):
 			#[[0,255-x,255] for x in range(255)] +
 			#[[x,0,255] for x in range(255)]
 		#)
-		colors=colors[::2] #faster
+		colors=colors[::8] #faster
 		#colors = [[b,b,b] for r,g,b in colors] #white glow
 
 		def fix_gamma(x):
 			return int(((x / 255) ** 0.7) * 255)
 		colors = [[fix_gamma(ch) for ch in color] for color in colors] #lower brightness
 
-		colors = [[r//10,g//10,b//10] for r,g,b in colors] #lower brightness
+		if touch_source is None:
+			colors = [[r//10,g//10,b//10] for r,g,b in colors] #lower brightness
+			pass
 
 		print("Watch the pretty colors!")
 		while True:
 			for j in range(len(colors)):
-				c=rotate(colors,len(colors) - j - 1)[::len(colors)//(6*2)]
+				c = rotate(colors,len(colors) - j - 1)[::len(colors)//(6)]
 				#for g in range(20):
 					#what if we had more selfs(20x slower), was doing touch(2x slower), but increased the i2c speed(10x faster) too
+
+				if touch_source is not None:
+					grayscale = " .:-=+*#%@"
+					touch = touch_source.touch
+					for t in touch:
+						print ("%27s" % (grayscale[t % len(grayscale)] + grayscale[-1] * int(t / len(grayscale)),), end="")
+					print()
+
+					c = [[(ch * t // 256) for ch in color] for color, t in zip(c, touch)]
+
 				self.set_leds(sum(c,[])[:18])
-				#for g in range(20):
-					#blink test to show the fps
-					#self.set_leds([0xff] * 18)
+
 
 	def __repr__(self):
 		return super().__repr__()[:-1] + ", i2c 0x%02x %r>" % (self._i2c_address, self.description)
@@ -311,3 +319,6 @@ if __name__=="__main__":
 		(0x0033003c, 0x42365714, 0x32353530): (0x22, "discovery 2"),
 	}
 	collection.enumerate(device_list)
+	fret = collection[0x20]
+	disco = collection[0x21]
+	disco.i2c_led_demo(fret)
