@@ -319,6 +319,7 @@ if __name__=="__main__":
 		(0x0033003c, 0x42365714, 0x32353530): (0x22, "discovery 2"),
 	}
 	collection.enumerate(device_list)
-	fret = collection[0x20]
+	if 0x20 in collection:
+		fret = collection[0x20]
 	disco = collection[0x21]
 	disco.i2c_led_demo(fret)
