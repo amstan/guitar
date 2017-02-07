@@ -28,6 +28,7 @@
 
 #define MAXHISTORY 50
 uint16_t history[MAXHISTORY][TOUCH_NUM];
+uint16_t *current;
 
 void touch_init(void) {
 	/* Remux GPIOs */
@@ -131,7 +132,7 @@ static int captouch_read(int argc, char **argv)
 	uint16_t *values;
 	ccprintf("Reading %d pads: ", TOUCH_NUM);
 
-	values = touch_read();
+	values = current;
 
 	for (i = 0; i < TOUCH_NUM; i++) {
 		ccprintf("0x%04x ", values[i]);
@@ -149,7 +150,7 @@ int hc_captouch_raw(struct host_cmd_handler_args *args)
 	uint16_t *p = args->response;
 	uint16_t *values;
 
-	values = touch_read();
+	values = current;
 
 	memcpy(p, values, TOUCH_NUM * 2);
 	args->response_size = TOUCH_NUM * 2;
@@ -159,3 +160,13 @@ int hc_captouch_raw(struct host_cmd_handler_args *args)
 DECLARE_HOST_COMMAND(EC_CMD_CAPTOUCH_RAW,
                      hc_captouch_raw,
                      EC_VER_MASK(0));
+
+void captouch_task(void)
+{
+	CPRINTS("captouch task starting");
+
+	while (1) {
+		current = touch_read();
+		task_wait_event(10000);
+	}
+}
