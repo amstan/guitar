@@ -133,6 +133,19 @@ class Fret(object):
 	def i2c_address(self, new_address):
 		self.change_i2c_address(new_address)
 
+	def jump(self, cmd = "RW"):
+		cmd = {
+			"CANCEL": 0x00,
+			"RO": 0x01,
+			"RW": 0x02,
+			"COLD": 0x03,
+			"DISABLE_JUMP": 0x04,
+			"HIBERNATE": 0x05,
+		}[cmd]
+		flags = 0x00
+
+		return self.command(0x00D2, [cmd, flags], expected_length=0)
+
 	_touch_len = None
 	@property
 	def touch(self):
@@ -335,6 +348,10 @@ if __name__=="__main__":
 	disco = collection[0x21]
 	#for _ in disco.i2c_led_demo(fret):
 		#pass
+
+	for f in collection.values():
+		if f.version["Firmware copy"]!="RW":
+			f.jump("RW")
 
 	iters = [f.i2c_led_demo(f) for f in collection.values()]
 	for k, i in enumerate(iters):
