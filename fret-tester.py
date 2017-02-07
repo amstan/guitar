@@ -133,11 +133,14 @@ class Fret(object):
 	def i2c_address(self, new_address):
 		self.change_i2c_address(new_address)
 
+	_touch_len = None
 	@property
 	def touch(self):
-		reply = self.command(0x0034, [])
+		reply = self.command(0x0034, [], expected_length=self._touch_len)
+		if self._touch_len is None:
+			self._touch_len = len(reply)
 
-		touch_struct = struct.Struct("<" + "H" * (len(reply) // 2))
+		touch_struct = struct.Struct("<" + "H" * (self._touch_len // 2))
 		return touch_struct.unpack(reply)
 
 	def set_led(self, i, r, g, b):
@@ -171,7 +174,7 @@ class Fret(object):
 		colors = [[fix_gamma(ch) for ch in color] for color in colors] #lower brightness
 
 		if touch_source is None:
-			colors = [[r//10,g//10,b//10] for r,g,b in colors] #lower brightness
+			#colors = [[r//10,g//10,b//10] for r,g,b in colors] #lower brightness
 			pass
 
 		print("Watch the pretty colors!")
@@ -184,14 +187,11 @@ class Fret(object):
 				if touch_source is not None:
 					grayscale = " .:-=+*#%@"
 					touch = touch_source.touch
-					for t in touch:
-						print ("%27s" % (grayscale[t % len(grayscale)] + grayscale[-1] * int(t / len(grayscale)),), end="")
-					print()
 
 					c = [[(ch * t // 256) for ch in color] for color, t in zip(c, touch)]
 
 				self.set_leds(sum(c,[])[:18])
-
+				yield
 
 	def __repr__(self):
 		return super().__repr__()[:-1] + ", i2c 0x%02x %r>" % (self._i2c_address, self.description)
@@ -333,4 +333,13 @@ if __name__=="__main__":
 	if 0x20 in collection:
 		fret = collection[0x20]
 	disco = collection[0x21]
-	disco.i2c_led_demo(fret)
+	#for _ in disco.i2c_led_demo(fret):
+		#pass
+
+	iters = [f.i2c_led_demo(f) for f in collection.values()]
+	for k, i in enumerate(iters):
+		for ki in range(k*2):
+			next(i)
+	while True:
+		for i in iters:
+			next(i)
