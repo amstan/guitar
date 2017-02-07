@@ -162,7 +162,7 @@ class Fret(object):
 	def set_leds(self, data):
 		self.command(0x0027, data, expected_length = 0)
 
-	def i2c_led_demo(self, touch_source=None):
+	def i2c_led_demo(self, touch_source=None, offset=0):
 		def rotate(l,n):
 			return l[n:] + l[:n]
 
@@ -190,16 +190,24 @@ class Fret(object):
 			#colors = [[r//10,g//10,b//10] for r,g,b in colors] #lower brightness
 			pass
 
+		colors = rotate(colors, offset)
+
 		print("Watch the pretty colors!")
 		while True:
 			for j in range(len(colors)):
-				c = rotate(colors,len(colors) - j - 1)[::len(colors)//(6)]
+				c = rotate(colors, len(colors) - j - 1)[::len(colors)//(6)]
 				#for g in range(20):
 					#what if we had more selfs(20x slower), was doing touch(2x slower), but increased the i2c speed(10x faster) too
 
 				if touch_source is not None:
 					grayscale = " .:-=+*#%@"
-					touch = touch_source.touch
+					touch = list(touch_source.touch)
+
+					#m = 0
+					#for i, t in reversed(list(enumerate(touch))):
+						#if t > m:
+							#m = t
+						#touch[i] = m
 
 					c = [[(ch * t // 256) for ch in color] for color, t in zip(c, touch)]
 
@@ -353,10 +361,7 @@ if __name__=="__main__":
 		if f.version["Firmware copy"]!="RW":
 			f.jump("RW")
 
-	iters = [f.i2c_led_demo(f) for f in collection.values()]
-	for k, i in enumerate(iters):
-		for ki in range(k*2):
-			next(i)
+	iters = [f.i2c_led_demo(f, i * 10) for i, f in enumerate(collection.values())]
 	while True:
-		for i in iters:
-			next(i)
+		for f in iters:
+			next(f)
