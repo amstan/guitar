@@ -5,6 +5,34 @@ import struct
 import pprint
 import subprocess
 
+import datetime
+class FPSCounter(object):
+	"""Measure fps of how many times the callback is called."""
+
+	def __init__(self, sample_count=10):
+		"""@arg sample_count How many measurements to use for average."""
+		self._samples = collections.deque(maxlen=sample_count)
+
+	def callback(self, *_):
+		"""The fps counter actually counts how fast this method gets called.
+		@arg _ all arguments will be thrown away."""
+		self._samples.append(datetime.datetime.now())
+
+	@property
+	def fps(self):
+		"""How many times the fps_callback gets called(in Hz)."""
+		samples=list(self._samples)
+		deltas=(after - before for before, after in zip(samples, samples[1:] + [datetime.datetime.now()]))
+		try:
+			return (len(samples) + 1) / sum(deltas, datetime.timedelta(0)).total_seconds()
+		except ZeroDivisionError:
+			return 0
+
+	def __str__(self):
+		return "%0.2ffps" % self.fps
+	def __repr__(self):
+		return "<FPSCounter %s>" % self
+
 class ECCommError(Exception):
 	pass
 
@@ -368,8 +396,16 @@ if __name__=="__main__":
 	for f in collection.values():
 		if f.version["Firmware copy"]!="RW":
 			f.jump("RW")
+		#f.flash()
 
-	iters = [f.i2c_led_demo(f, i * 10) for i, f in enumerate(collection.values())]
+	def rotate(l,n):
+		return l[n:] + l[:n]
+	fps = rotate(list(collection.values()),1)
+
+	iters = [f.i2c_led_demo(fp, i * 10) for i, (f,fp) in enumerate(zip(collection.values(),fps))]
+	fps = FPSCounter()
 	while True:
+		fps.callback()
 		for f in iters:
 			next(f)
+		print(fps)
