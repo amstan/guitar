@@ -3,6 +3,7 @@ import collections
 import periphery
 import struct
 import pprint
+import subprocess
 
 class ECCommError(Exception):
 	pass
@@ -145,6 +146,13 @@ class Fret(object):
 		flags = 0x00
 
 		return self.command(0x00D2, [cmd, flags], expected_length=0)
+
+	def flash(self, filename = "/tmp/ec.RW.bin", offset=32768, size=32768):
+		old_i2c_address = self.i2c_address
+		self.i2c_address = STARTUP_I2C_ADDRESS
+		subprocess.call("sudo /home/alex/ec/build/bds/util/ectool flasherase %s %s" % (offset, size), shell=True)
+		subprocess.call("sudo /home/alex/ec/build/bds/util/ectool flashwrite %s %s" % (offset, filename), shell=True)
+		self.i2c_address = old_i2c_address
 
 	_touch_len = None
 	@property
