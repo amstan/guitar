@@ -415,14 +415,23 @@ if __name__=="__main__":
 			f.jump("RW")
 		#f.flash()
 
-	def rotate(l,n):
-		return l[n:] + l[:n]
-	fps = rotate(list(collection.values()),1)
+	fps = FPSCounter(1000)
 
-	iters = [f.i2c_led_demo(fp, i * 10) for i, (f,fp) in enumerate(zip(collection.values(),fps))]
-	fps = FPSCounter()
-	while True:
-		fps.callback()
-		for f in iters:
+	import threading
+	def func(f):
+		while True:
+			fps.callback()
 			next(f)
-		print(fps)
+
+	iters = [f.i2c_led_demo(f, i * 10) for i, f in enumerate(collection.values())]
+
+	for f in iters:
+		#next(f)
+		t = threading.Thread(target=func, args=(f,))
+		t.daemon = True
+		t.start()
+
+	import time
+	while True:
+		print("%0.2ffps" % (fps.fps/len(collection)))
+		time.sleep(0.2)
