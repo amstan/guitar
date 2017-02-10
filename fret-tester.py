@@ -383,6 +383,27 @@ class FretCollection(collections.OrderedDict):
 		return '\n'.join("0x%02x: %r" % item for item in self.items())
 	__repr__ = __str__
 
+def fps_test(collection):
+	fps = FPSCounter(len(collection)*10)
+
+	import threading
+	def func(f):
+		while True:
+			fps.callback()
+			next(f)
+
+	iters = [f.i2c_led_demo(f, i * 10) for i, f in enumerate(collection.values())]
+
+	for f in iters:
+		#next(f)
+		t = threading.Thread(target=func, args=(f,))
+		t.daemon = True
+		t.start()
+
+	import time
+	while True:
+		print("%0.2ffps" % (fps.fps/len(collection)))
+		time.sleep(0.2)
 
 if __name__=="__main__":
 	i2c = periphery.I2C("/dev/i2c-0")
@@ -415,23 +436,4 @@ if __name__=="__main__":
 			f.jump("RW")
 		#f.flash()
 
-	fps = FPSCounter(1000)
-
-	import threading
-	def func(f):
-		while True:
-			fps.callback()
-			next(f)
-
-	iters = [f.i2c_led_demo(f, i * 10) for i, f in enumerate(collection.values())]
-
-	for f in iters:
-		#next(f)
-		t = threading.Thread(target=func, args=(f,))
-		t.daemon = True
-		t.start()
-
-	import time
-	while True:
-		print("%0.2ffps" % (fps.fps/len(collection)))
-		time.sleep(0.2)
+	fps_test(collection)
