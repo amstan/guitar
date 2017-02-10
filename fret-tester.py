@@ -198,6 +198,7 @@ class Fret(object):
 	def set_leds(self, data):
 		self.command(0x0027, data, expected_length = 0)
 
+	_cur_touch = [0,0,0,0,0,0]
 	def i2c_led_demo(self, touch_source=None, offset=0):
 		def rotate(l,n):
 			return l[n:] + l[:n]
@@ -244,6 +245,16 @@ class Fret(object):
 						#if t > m:
 							#m = t
 						#touch[i] = m
+
+					self._cur_touch = [(i*0.8) for i in self._cur_touch]
+					self._cur_touch = [max(cur, new) for cur,new in zip(self._cur_touch, touch)]
+					def clip(x, min, max):
+						if x < min:
+							return min
+						if x > max:
+							return max
+						return x
+					touch = [clip(int(i-1),0,255) for i in self._cur_touch]
 
 					c = [[(ch * t // 256) for ch in color] for color, t in zip(c, touch)]
 
