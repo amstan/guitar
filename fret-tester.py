@@ -279,7 +279,7 @@ class Fret(object):
 		self.set_leds(led_data)
 
 
-class FretCollection(collections.UserDict):
+class FretCollection(collections.OrderedDict):
 	def __init__(self, i2c):
 		self.i2c = i2c
 		super().__init__()
@@ -347,6 +347,12 @@ class FretCollection(collections.UserDict):
 
 		for uuid, (address, description) in assignment.items():
 			print("Could not find %s %r who was supposed to go at address 0x%02x" % (format_uuid(uuid), description, address))
+
+		self._sort()
+
+	def _sort(self):
+		for key in sorted(self.keys()):
+			self.move_to_end(key)
 
 	def colorize_addresses(self):
 		try:
