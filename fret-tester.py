@@ -4,6 +4,8 @@ import periphery
 import struct
 import pprint
 import subprocess
+import time
+import threading
 
 import datetime
 class FPSCounter(object):
@@ -183,8 +185,7 @@ class Fret(object):
 		self.i2c_address = old_i2c_address
 
 	_touch_len = None
-	@property
-	def touch(self):
+	def get_touch(self):
 		reply = self.command(0x0034, [], expected_length=self._touch_len)
 		if self._touch_len is None:
 			self._touch_len = len(reply)
@@ -238,7 +239,7 @@ class Fret(object):
 
 				if touch_source is not None:
 					grayscale = " .:-=+*#%@"
-					touch = list(touch_source.touch)
+					touch = list(touch_source.get_touch())
 
 					#m = 0
 					#for i, t in reversed(list(enumerate(touch))):
@@ -260,6 +261,27 @@ class Fret(object):
 
 				self.set_leds(sum(c,[])[:18])
 				yield
+
+	def task(self):
+		self.touch = (0,) * 6
+		self.leds = [
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+		]
+		while True:
+			try:
+				self.touch = self.get_touch()
+				self.set_leds(sum(self.leds, []))
+			except periphery.i2c.I2CError:
+				time.sleep(0.5)
+				continue
+			except ECCommError:
+				time.sleep(0.5)
+				continue
 
 	def __repr__(self):
 		return super().__repr__()[:-1] + ", i2c 0x%02x %r>" % (self._i2c_address, self.description)
@@ -386,7 +408,6 @@ class FretCollection(collections.OrderedDict):
 def fps_test(collection):
 	fps = FPSCounter(len(collection)*10)
 
-	import threading
 	def func(f):
 		while True:
 			fps.callback()
@@ -400,18 +421,46 @@ def fps_test(collection):
 		t.daemon = True
 		t.start()
 
-	import time
 	while True:
 		print("%0.2ffps" % (fps.fps/len(collection)))
 		time.sleep(0.2)
 
+def rpyc_start(collection):
+	print("start tasks")
+	for f in collection.values():
+		t = threading.Thread(target=f.task, args=())
+		t.daemon = True
+		t.start()
+
+	import rpyc
+	class DeviceService(rpyc.Service):
+		def on_connect(self):
+			self.exposed_collection = collection
+
+		def exposed_set_led(self, string_id, fret_id, r, g, b):
+			collection[0x30 + fret_id].leds[string_id] = [r, g, b]
+
+	_rpyc_config={
+		"allow_all_attrs": True,
+		"allow_exposed_attrs": False,
+		"exposed_prefix": "",
+		"allow_getattr": True,
+		"allow_setattr": True,
+		"allow_delattr": True,
+		"allow_pickle": True,
+	}
+
+	from rpyc.utils.server import ThreadedServer
+	t = ThreadedServer(DeviceService, port = 25000, protocol_config=_rpyc_config)
+	t.start()
+
 if __name__=="__main__":
-	i2c = periphery.I2C("/dev/i2c-0")
+	i2c = periphery.I2C("/dev/i2c-5")
 	collection = FretCollection(i2c)
 	device_list = {
-		(0x00430043, 0x46335717, 0x20333539): (0x20, "fret with pins"),
-		(0x00230024, 0x42365712, 0x32353530): (0x21, "discovery 1"),
-		(0x0033003c, 0x42365714, 0x32353530): (0x22, "discovery 2"),
+		#(0x00430043, 0x46335717, 0x20333539): (0x20, "fret with pins"),
+		#(0x00230024, 0x42365712, 0x32353530): (0x21, "discovery 1"),
+		#(0x0033003c, 0x42365714, 0x32353530): (0x22, "discovery 2"),
 
 		(0x00420051, 0x46335716, 0x20333539): (0x30, "fret 0"),
 		(0x002c0055, 0x46335717, 0x20333539): (0x31, "fret 1"),
@@ -427,7 +476,7 @@ if __name__=="__main__":
 	collection.enumerate(device_list)
 	if 0x20 in collection:
 		fret = collection[0x20]
-	disco = collection[0x21]
+	#disco = collection[0x21]
 	#for _ in disco.i2c_led_demo(fret):
 		#pass
 
@@ -436,4 +485,5 @@ if __name__=="__main__":
 			f.jump("RW")
 		#f.flash()
 
-	fps_test(collection)
+	#fps_test(collection)
+	rpyc_start(collection)
