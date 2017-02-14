@@ -26,7 +26,7 @@
 #endif
 
 static int debounced_lid_open;		/* Debounced lid state */
-static int forced_lid_open;	/* Forced lid open */
+static int forced_lid_open = 1;	/* Forced lid open */
 
 /**
  * Get raw lid switch state.
