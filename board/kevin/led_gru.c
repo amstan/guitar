@@ -7,6 +7,7 @@
  */
 
 #include "battery.h"
+#include "chipset.h"
 #include "charge_state.h"
 #include "chipset.h"
 #include "hooks.h"
@@ -76,58 +77,63 @@ int led_set_brightness(enum ec_led_id led_id, const uint8_t *brightness)
 	return EC_SUCCESS;
 }
 
-static void gru_led_set_battery(void)
+static void gru_led_set_led(void)
 {
-	static int battery_second;
-	uint32_t chflags = charge_get_flags();
+	static int second;
 
-	battery_second++;
+	uint8_t green = 0;
+	uint8_t red = 0;
 
-	/*
-	 * BAT LED behavior: Follow chromeos specification.
-	 * Green/Amber for CHARGE_FLAG_FORCE_IDLE
-	 */
+	second++;
+
+	if (chipset_in_state(CHIPSET_STATE_ANY_OFF))
+		green = 0;
+	else if (chipset_in_state(CHIPSET_STATE_ON))
+		green = 1;
+	else if (chipset_in_state(CHIPSET_STATE_SUSPEND))
+		green = (second & 3) ? 0 : 1;
+
 	switch (charge_get_state()) {
 	case PWR_STATE_CHARGE:
-		bat_led_set_color(LED_AMBER);
+		red = 1;
+		break;
+	case PWR_STATE_CHARGE_NEAR_FULL:
+		red = 1;
 		break;
 	case PWR_STATE_DISCHARGE:
 		if (charge_get_percent() < 3)
-			bat_led_set_color((battery_second & 1)
-					? LED_OFF : LED_AMBER);
+			red = (second & 1) ? 0 : 1;
 		else if (charge_get_percent() < 10)
-			bat_led_set_color((battery_second & 3)
-					? LED_OFF : LED_AMBER);
-		else if (charge_get_percent() >= BATTERY_LEVEL_NEAR_FULL &&
-		    (chflags & CHARGE_FLAG_EXTERNAL_POWER))
-			bat_led_set_color(LED_GREEN);
+			red = (second & 3) ? 0 : 1;
 		else
-			bat_led_set_color(LED_OFF);
+			red = 0;
 		break;
 	case PWR_STATE_ERROR:
-		bat_led_set_color((battery_second & 1) ? LED_OFF : LED_RED);
-		break;
-	case PWR_STATE_CHARGE_NEAR_FULL:
-		bat_led_set_color(LED_GREEN);
+		red = (second & 1) ? 0 : 1;
 		break;
 	case PWR_STATE_IDLE: /* External power connected in IDLE. */
-		if (chflags & CHARGE_FLAG_FORCE_IDLE)
-			bat_led_set_color(
-				(battery_second & 0x2) ? LED_GREEN : LED_AMBER);
-		else
-			bat_led_set_color(LED_GREEN);
+		red = 0;
 		break;
 	default:
 		/* Other states don't alter LED behavior */
 		break;
 	}
+
+	if ((green == 0) && (red == 0))
+		bat_led_set_color(LED_OFF);
+	if ((green == 0) && (red == 1))
+		bat_led_set_color(LED_RED);
+	if ((green == 1) && (red == 0))
+		bat_led_set_color(LED_GREEN);
+	if ((green == 1) && (red == 1))
+		bat_led_set_color(LED_AMBER);
 }
 
 /* Called by hook task every 1 sec */
 static void led_second(void)
 {
 	if (led_auto_control_is_enabled(EC_LED_ID_BATTERY_LED))
-		gru_led_set_battery();
+		gru_led_set_led();
 }
 DECLARE_HOOK(HOOK_SECOND, led_second, HOOK_PRIO_DEFAULT);
 
