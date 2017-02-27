@@ -87,6 +87,54 @@ class GuitarDevice(device.Device, QThread):
 			self.guitar_event.emit("ps%d" % event["string_id"])
 			self.guitar_event.emit("rs%dv%03d" % (event["string_id"], event["velocity"]))
 
+import rpyc
+class RaspberryPiRpc(QThread):
+	guitar_event = pyqtSignal(str)
+
+	def __init__(self, socket=("192.168.0.109", 25000)):
+		self.rpyc_connection = rpyc.connect(*socket)
+		self.collection = self.rpyc_connection.root.collection
+		self.set_led = self.rpyc_connection.root.set_led
+		print(self.collection)
+
+		self.frets = []
+		for fret_id in range(9):
+			self.frets.append([])
+			for string_id in range(6):
+				self.frets[fret_id].append(
+					self.collection[0x30 + fret_id].leds[string_id])
+
+		self.touch = []
+		for fret_id in range(10):
+			self.touch.append(
+				self.collection[0x30 + fret_id].touch)
+
+		QThread.__init__(self)
+
+	def run(self):
+		while True:
+			for fret_id in range(10):
+				old_reading = self.touch[fret_id]
+				new_reading = self.collection[0x30 + fret_id].touch
+				self.touch[fret_id] = new_reading
+
+				if fret_id < 9:
+					for string_id in range(6):
+						if (old_reading[string_id] < 100) and (new_reading[string_id] >= 100):
+							self.guitar_event.emit("pf%1d%d" % (string_id, fret_id))
+						if (old_reading[string_id] > 100) and (new_reading[string_id] <= 100):
+							self.guitar_event.emit("rf%1d%d" % (string_id, fret_id))
+				else:
+					# strum for now
+					for string_id in range(3):
+						if (old_reading[string_id] < 100) and (new_reading[string_id] >= 100):
+							self.guitar_event.emit("ps%1d" % (string_id))
+						if (old_reading[string_id] > 100) and (new_reading[string_id] <= 100):
+							self.guitar_event.emit("rs%1d" % (string_id))
+
+				#print(new_reading)
+			time.sleep(0.02)
+
 class QFret(QPushButton):
 	on_color = QColor(0,0,0)
 	off_color = QColor(0,0,0)
@@ -98,7 +146,7 @@ class QFret(QPushButton):
 
 		self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
 		self.setCheckable(True)
-		self.setChecked(True)
+		self.setChecked(False)
 
 		#Background color
 		self.released_color = self.palette()
@@ -220,9 +268,13 @@ class QGuitarSeq(QMainWindow):
 		self.emulator.guitar_event.connect(self.guitarseq.on_guitar_event)
 		self.emulator.show()
 
-		self.guitar_device = GuitarDevice()
-		self.guitar_device.guitar_event.connect(self.guitarseq.on_guitar_event)
-		self.guitar_device.start()
+		#self.guitar_device = GuitarDevice()
+		#self.guitar_device.guitar_event.connect(self.guitarseq.on_guitar_event)
+		#self.guitar_device.start()
+
+		self.rpi = RaspberryPiRpc()
+		self.rpi.guitar_event.connect(self.guitarseq.on_guitar_event)
+		self.rpi.start()
 
 	def scan_for_notes(self):
 		while 1:
@@ -234,17 +286,23 @@ class QGuitarSeq(QMainWindow):
 					print(time, (hex(command), note_id, velocity), notes.Note(note_id))
 					if (command & 0xe0) == 0x80:
 						self.handle_note(notes.Note(note_id), command & 0x10, velocity)
-				except Exception:
-					print(time, data)
+				except Exception as e:
+					print(time, data, e)
 				continue
 			break
 
 	def handle_note(self, note, pressed, velocity):
+		pressed = pressed!=0
 		for fret in self.main_frets:
 			if fret.note.id == note.id:
 				fret.setChecked(pressed)
 				if pressed:
-					fret.update_color(QColor.fromHslF((fret.note.id % 12)/12,1,velocity/128.*0.7))
+					color = QColor.fromHslF((fret.note.id % 12)/12,1,velocity/128.*0.7)
+					fret.update_color(color)
+				if pressed:
+					self.rpi.set_led(fret.string_id, fret.fret_id, *color.getRgb()[:3])
+				else:
+					self.rpi.set_led(fret.string_id, fret.fret_id, 0, 0, 0)
 
 if __name__ == '__main__':
 	import sys
