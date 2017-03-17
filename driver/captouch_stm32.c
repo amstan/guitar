@@ -12,7 +12,7 @@
 #include "timer.h"
 #include "util.h"
 #include "captouch_stm32.h"
-
+#include "lb_common.h"
 
 /* Console output macros */
 #define CPUTS(outstr) cputs(CC_CAPTOUCH, outstr)
@@ -158,12 +158,28 @@ DECLARE_HOST_COMMAND(EC_CMD_CAPTOUCH_RAW,
                      hc_captouch_raw,
                      EC_VER_MASK(0));
 
+extern uint8_t lightbar_raw_cmd_recieved;
 void captouch_task(void)
 {
 	CPRINTS("captouch task starting");
 
 	while (1) {
 		current_touch_values = touch_read();
+
+		if (!lightbar_raw_cmd_recieved) {
+			uint8_t i;
+			for (i = 0; i < TOUCH_NUM; i++) {
+				int16_t value = current_touch_values[i];
+				value -= 10;
+				if (value > 250)
+					value = 250;
+				if (value < 0)
+					value = 0;
+				CPRINTS("%d", value);
+				lb_set_rgb(i, 1 + (i==0) + value, 1 + value, 1 + value);
+			}
+		}
+
 		task_wait_event(10000);
 	}
 }

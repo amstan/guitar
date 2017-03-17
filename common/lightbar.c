@@ -1652,11 +1652,14 @@ DECLARE_HOOK(HOOK_CHIPSET_SHUTDOWN, lightbar_shutdown, HOOK_PRIO_DEFAULT);
 /* Host commands via LPC bus */
 /****************************************************************************/
 
+uint8_t lightbar_raw_cmd_recieved = 0;
+
 static int cmd_lightbar_raw(struct host_cmd_handler_args *args)
 {
 	if (args->params_size > (NUM_LEDS * 3))
 		return EC_RES_INVALID_PARAM;
 
+	lightbar_raw_cmd_recieved = 1;
 	lb_set_rgb_all(args->params, args->params_size);
 
 	args->response_size = 0;
