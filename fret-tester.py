@@ -326,7 +326,7 @@ class FretCollection(collections.OrderedDict):
 			print("Scanning address 0x%02x..." % address)
 			while True:
 				try:
-					f = Fret(i2c, i2c_address = address)
+					f = Fret(self.i2c, i2c_address = address)
 				except periphery.i2c.I2CError:
 					break
 
@@ -340,7 +340,7 @@ class FretCollection(collections.OrderedDict):
 		while True:
 			try:
 				# Try to enumerate at the search location
-				f = Fret(i2c, i2c_address = STARTUP_I2C_ADDRESS)
+				f = Fret(self.i2c, i2c_address = STARTUP_I2C_ADDRESS)
 			except periphery.i2c.I2CError:
 				break
 
@@ -378,21 +378,21 @@ class FretCollection(collections.OrderedDict):
 
 	def colorize_addresses(self):
 		try:
-			startup_frets = Fret(i2c, i2c_address = STARTUP_I2C_ADDRESS)
+			startup_frets = Fret(self.i2c, i2c_address = STARTUP_I2C_ADDRESS)
 		except periphery.i2c.I2CError:
 			pass
 		else:
 			startup_frets.set_leds([40, 1, 1,  5, 20, 5] + [1, 2, 1] * 4)
 
 		try:
-			unknown_frets = Fret(i2c, i2c_address = UNKNOWN_DEVICE_I2C_ADDRESS)
+			unknown_frets = Fret(self.i2c, i2c_address = UNKNOWN_DEVICE_I2C_ADDRESS)
 		except periphery.i2c.I2CError:
 			pass
 		else:
 			unknown_frets.set_leds([40, 1, 1,  20, 10, 1] + [2, 1, 1] * 4)
 
 		try:
-			staging_frets = Fret(i2c, i2c_address = STAGING_I2C_ADDRESS)
+			staging_frets = Fret(self.i2c, i2c_address = STAGING_I2C_ADDRESS)
 		except periphery.i2c.I2CError:
 			pass
 		else:
