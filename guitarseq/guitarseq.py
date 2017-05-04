@@ -4,7 +4,7 @@ import jack
 import cffi
 import os
 import sys
-
+import threading
 import notes
 
 #load libguitarseq
@@ -16,7 +16,7 @@ _ffi.cdef(open(_guitarseq_cffi_h).read())
 _libguitarseq = _ffi.dlopen(_libguitarseq_so_file)
 
 class GuitarSeq(object):
-	tuning = [notes.Note(name) for name in "D2 A2 D3 G3 B3 E4".split(" ")]
+	tuning = [notes.Note(name) for name in "E2 A2 D3 G3 B3 E4".split(" ")]
 	fret_count = 9
 	string_count = 6
 
@@ -93,6 +93,7 @@ class GuitarSeq(object):
 		self.out_buffer.write(_ffi.buffer(ffi_data))
 
 	def note(self, on=True, note=64, velocity=64):
+		print(threading.current_thread())
 		self.out_event(0x80 + 0x10*bool(on), note, velocity)
 
 	def get_midi_in_event(self):
@@ -117,6 +118,9 @@ class GuitarSeq(object):
 		event_type = event[1]
 		string = int(event[2])
 
+		#if string > 2:
+			#return
+
 		if event_type == 'f':
 			fret = int(event[3:])
 			self.fret_bitmap[string][fret] = pressed
@@ -124,10 +128,19 @@ class GuitarSeq(object):
 			self.recalculate_active_frets()
 
 			if self.last_played[string] != None:
-				if fret >= last_played_fret:
+				if fret == last_played_fret:
 					#mute string
 					self.note(False, self.last_played[string].id)
 					self.last_played[string] = None
+				if fret > last_played_fret:
+					#hammer on
+					if pressed:
+						self.note(False, self.last_played[string].id) #kill the previous note on this string
+						self.last_played[string] = None
+						#velocity = 64
+						#note = self.tuning[string] + self.active_frets[string] + 1
+						#self.last_played[string] = note
+						#self.note(True, note.id, velocity)
 
 		elif event_type == 's':
 			if len(event) > 3 and event[3] == 'v':

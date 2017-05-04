@@ -87,11 +87,12 @@ class GuitarDevice(device.Device, QThread):
 			self.guitar_event.emit("ps%d" % event["string_id"])
 			self.guitar_event.emit("rs%dv%03d" % (event["string_id"], event["velocity"]))
 
-import rpyc
 class RaspberryPiRpc(QThread):
 	guitar_event = pyqtSignal(str)
 
 	def __init__(self, socket=("192.168.0.109", 25000)):
+		import rpyc
+
 		self.rpyc_connection = rpyc.connect(*socket)
 		self.collection = self.rpyc_connection.root.collection
 		self.set_led = self.rpyc_connection.root.set_led
@@ -131,6 +132,82 @@ class RaspberryPiRpc(QThread):
 							self.guitar_event.emit("ps%1d" % (string_id))
 						if (old_reading[string_id] > 100) and (new_reading[string_id] <= 100):
 							self.guitar_event.emit("rs%1d" % (string_id))
+
+				#print(new_reading)
+			time.sleep(0.02)
+
+class LocalI2C(QThread):
+	guitar_event = pyqtSignal(str)
+
+	device_list = {
+		(0x00420051, 0x46335716, 0x20333539): (0x30, "fret 0"),
+		(0x002c0055, 0x46335717, 0x20333539): (0x31, "fret 1"),
+		(0x001d003a, 0x46335716, 0x20333539): (0x32, "fret 2"),
+		(0x0028004b, 0x46335717, 0x20333539): (0x33, "fret 3"),
+		(0x0030003b, 0x46335717, 0x20333539): (0x34, "fret 4"),
+		(0x00290033, 0x46335716, 0x20333539): (0x35, "fret 5"),
+		(0x001e0038, 0x46335716, 0x20333539): (0x36, "fret 6"),
+		(0x002f0033, 0x46335716, 0x20333539): (0x37, "fret 7"),
+		(0x002c0038, 0x46335716, 0x20333539): (0x38, "fret 8"),
+		(0x00400035, 0x46335717, 0x20333539): (0x39, "fret 9"),
+	}
+
+	def __init__(self):
+		import fret_tester
+		import threading
+
+		self.i2c = fret_tester.periphery.I2C("/dev/i2c-5")
+		self.collection = fret_tester.FretCollection(self.i2c)
+		self.collection.enumerate(self.device_list)
+
+		for f in self.collection.values():
+			if f.version["Firmware copy"]!="RW":
+				f.jump("RW")
+
+		print("start local i2c tasks")
+		for f in self.collection.values():
+			t = threading.Thread(target=f.task, args=())
+			t.daemon = True
+			t.start()
+
+		self.touch = []
+		for fret_id in range(10):
+			self.touch.append(
+				self.collection[0x30 + fret_id].touch)
+
+		QThread.__init__(self)
+
+	def set_led(self, string_id, fret_id, r, g, b):
+		self.collection[0x30 + fret_id].leds[string_id] = [r//4, g//4, b//4]
+
+	def set_led2(self, string_id, fret_id, r, g, b):
+		self.collection[0x30 + fret_id].leds2[string_id] = [r//4, g//4, b//4]
+
+	def run(self):
+		while True:
+			for fret_id in range(10):
+				old_reading = self.touch[fret_id]
+				new_reading = self.collection[0x30 + fret_id].touch
+				self.touch[fret_id] = new_reading
+
+				for string_id in range(6):
+					if fret_id < 9:
+						spot = "f%1d%d" % (string_id, fret_id)
+					else:
+						spot = "s%1d" % (string_id)
+
+					rising_threshold = 130
+					falling_threshold = 130
+
+					if ((old_reading[string_id] < rising_threshold) and
+					    (new_reading[string_id] >= rising_threshold)):
+						self.guitar_event.emit("p%s" % (spot))
+						self.set_led2(string_id, fret_id, 30, 30, 30)
+
+					if ((old_reading[string_id] > falling_threshold) and
+					    (new_reading[string_id] <= falling_threshold)):
+						self.guitar_event.emit("r%s" % (spot))
+						self.set_led2(string_id, fret_id, 0, 0, 0)
 
 				#print(new_reading)
 			time.sleep(0.02)
@@ -264,17 +341,21 @@ class QGuitarSeq(QMainWindow):
 		self.timer.timeout.connect(self.scan_for_notes)
 		self.timer.start(10)
 
-		self.emulator = KeyboardEmulator()
-		self.emulator.guitar_event.connect(self.guitarseq.on_guitar_event)
-		self.emulator.show()
+		#self.emulator = KeyboardEmulator()
+		#self.emulator.guitar_event.connect(self.guitarseq.on_guitar_event)
+		#self.emulator.show()
 
 		#self.guitar_device = GuitarDevice()
 		#self.guitar_device.guitar_event.connect(self.guitarseq.on_guitar_event)
 		#self.guitar_device.start()
 
-		self.rpi = RaspberryPiRpc()
-		self.rpi.guitar_event.connect(self.guitarseq.on_guitar_event)
-		self.rpi.start()
+		#self.rpi = RaspberryPiRpc()
+		#self.rpi.guitar_event.connect(self.guitarseq.on_guitar_event)
+		#self.rpi.start()
+
+		self.locali2c = LocalI2C()
+		self.locali2c.guitar_event.connect(self.guitarseq.on_guitar_event)
+		self.locali2c.start()
 
 	def scan_for_notes(self):
 		while 1:
@@ -300,9 +381,9 @@ class QGuitarSeq(QMainWindow):
 					color = QColor.fromHslF((fret.note.id % 12)/12,1,velocity/128.*0.7)
 					fret.update_color(color)
 				if pressed:
-					self.rpi.set_led(fret.string_id, fret.fret_id, *color.getRgb()[:3])
+					self.locali2c.set_led(fret.string_id, fret.fret_id, *color.getRgb()[:3])
 				else:
-					self.rpi.set_led(fret.string_id, fret.fret_id, 0, 0, 0)
+					self.locali2c.set_led(fret.string_id, fret.fret_id, 0, 0, 0)
 
 if __name__ == '__main__':
 	import sys
