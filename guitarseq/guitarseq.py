@@ -4,7 +4,6 @@ import jack
 import cffi
 import os
 import sys
-import threading
 import notes
 
 #load libguitarseq
@@ -13,6 +12,12 @@ _guitarseq_cffi_h = os.path.join(os.path.dirname(os.path.realpath(__file__)), "g
 _ffi = cffi.FFI()
 _ffi.include(jack._ffi)
 _ffi.cdef(open(_guitarseq_cffi_h).read())
+_ffi.cdef("""
+	struct midi_event {
+		jack_nframes_t time;
+		size_t size;
+		jack_midi_data_t data[];
+	};""", packed=True)
 _libguitarseq = _ffi.dlopen(_libguitarseq_so_file)
 
 class GuitarSeq(object):
@@ -73,27 +78,19 @@ class GuitarSeq(object):
 		sys.stdout.flush()
 
 	def out_event(self,*data):
-		ffi_data = _ffi.new("jack_midi_data_t[]", len(data))
-		ffi_data[0:len(ffi_data)] = data
-
-		time = _ffi.new("jack_nframes_t[1]")
-		time[0] = self.jack_client.frame_time
-		size = _ffi.new("size_t[1]")
-		size[0] = len(data)
+		midi_event = (self.jack_client.frame_time, len(data), data)
+		ffi_midi_event = _ffi.new("struct midi_event*", midi_event)
 
 		space_left = self.out_buffer.write_space
-		space_needed = _ffi.sizeof(time) + _ffi.sizeof(size) + len(data)
+		space_needed = _ffi.sizeof(ffi_midi_event[0])
 		if space_left < space_needed:
 			pass
 			#TODO: find out why i can't make this a wait loop
 			#raise Exception("No space left in ringbuffer")
 
-		self.out_buffer.write(_ffi.buffer(time))
-		self.out_buffer.write(_ffi.buffer(size))
-		self.out_buffer.write(_ffi.buffer(ffi_data))
+		self.out_buffer.write(_ffi.buffer(ffi_midi_event))
 
 	def note(self, on=True, note=64, velocity=64):
-		print(threading.current_thread())
 		self.out_event(0x80 + 0x10*bool(on), note, velocity)
 
 	def get_midi_in_event(self):
@@ -159,6 +156,7 @@ class GuitarSeq(object):
 
 if __name__=="__main__":
 	import notes
+	#1/0
 	self=GuitarSeq()
 	
 	try:

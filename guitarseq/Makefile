@@ -13,6 +13,10 @@ LIBGUITARSEQ_FILES = process.c
 libguitarseq.so: $(LIBGUITARSEQ_FILES)
 	$(CC) $(CFLAGS) $(LDFLAGS) -shared -fPIC -g $^ -o $@
 
+process.c: guitarseq.cffi.h
+QGuitarSeq.py: guitarseq.py
+guitarseq.py: libguitarseq.so guitarseq.cffi.h
+
 .PHONY: clean
 clean:
 	find|grep pyc$$|xargs rm -rf
