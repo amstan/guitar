@@ -44,6 +44,9 @@ def format_uuid(uuid):
 STARTUP_I2C_ADDRESS = 0x1e
 UNKNOWN_DEVICE_I2C_ADDRESS = 0x1f
 STAGING_I2C_ADDRESS = 0x1d
+TOUCHPAD_I2C_ADDRESS = 0x4b
+
+counter = 0
 
 class Fret(object):
 	def __init__(self, i2c, i2c_address = STARTUP_I2C_ADDRESS):
@@ -143,9 +146,9 @@ class Fret(object):
 
 	def change_i2c_address(self, new_address, uuid = None):
 		if uuid is not None:
-			to_send = struct.pack("<bIII", new_address << 1, *uuid)
+			to_send = struct.pack("<BIII", new_address << 1, *uuid)
 		else:
-			to_send = struct.pack("<b", new_address << 1)
+			to_send = struct.pack("<B", new_address << 1)
 
 		try:
 			self.command(0x0032, to_send, expected_length = 0)
@@ -175,13 +178,15 @@ class Fret(object):
 		}[cmd]
 		flags = 0x00
 
-		return self.command(0x00D2, [cmd, flags], expected_length=0)
+		self.command(0x00D2, [cmd, flags], expected_length=0)
+
+		time.sleep(0.03)
 
 	def flash(self, filename = "/tmp/ec.RW.bin", offset=32768, size=32768):
 		old_i2c_address = self.i2c_address
 		self.i2c_address = STARTUP_I2C_ADDRESS
-		subprocess.call("sudo /home/alex/ec/build/bds/util/ectool flasherase %s %s" % (offset, size), shell=True)
-		subprocess.call("sudo /home/alex/ec/build/bds/util/ectool flashwrite %s %s" % (offset, filename), shell=True)
+		subprocess.call("sudo /home/alex/ec/build/bds/util/ectool --interface=i2c flasherase %s %s" % (offset, size), shell=True)
+		subprocess.call("sudo /home/alex/ec/build/bds/util/ectool --interface=i2c flashwrite %s %s" % (offset, filename), shell=True)
 		self.i2c_address = old_i2c_address
 
 	_touch_len = None
@@ -191,7 +196,24 @@ class Fret(object):
 			self._touch_len = len(reply)
 
 		touch_struct = struct.Struct("<" + "H" * (self._touch_len // 2))
-		return touch_struct.unpack(reply)
+
+		global counter
+		touch = []
+		if counter == 50:
+			print()
+		for x in touch_struct.unpack(reply):
+			if counter == 50:
+				print ("%8d" % x, end=" ")
+			x -= 150
+			if x < 0:
+				x = 0
+			x /= 3
+			touch.append(int(x))
+		counter += 1
+		if counter == 40:
+			counter = 0
+
+		return touch
 
 	def set_led(self, i, r, g, b):
 		self.command(0x0028, [0,7, i, r,g,b], expected_length = 0)
@@ -241,6 +263,8 @@ class Fret(object):
 					grayscale = " .:-=+*#%@"
 					touch = list(touch_source.get_touch())
 
+					#print(touch)
+
 					#m = 0
 					#for i, t in reversed(list(enumerate(touch))):
 						#if t > m:
@@ -255,7 +279,7 @@ class Fret(object):
 						if x > max:
 							return max
 						return x
-					touch = [clip(int(i-1),0,255) for i in self._cur_touch]
+					touch = [clip(int(i-1),5,255) for i in self._cur_touch]
 
 					c = [[(ch * t // 256) for ch in color] for color, t in zip(c, touch)]
 
@@ -272,10 +296,24 @@ class Fret(object):
 			[0, 0, 0],
 			[0, 0, 0],
 		]
+		self.leds2 = [
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+		]
 		while True:
 			try:
 				self.touch = self.get_touch()
-				self.set_leds(sum(self.leds, []))
+				def clamp(x, min, max):
+					if x < min:
+						return min
+					if x > max:
+						return max
+					return x
+				self.set_leds([clamp(led + led2, 0, 255) for led, led2 in zip(sum(self.leds, []), sum(self.leds2, []))])
 			except periphery.i2c.I2CError:
 				time.sleep(0.5)
 				continue
@@ -298,6 +336,15 @@ class Fret(object):
 		led_data = []
 		for i in reversed(range(6)):
 			led_data += ([1],[20])[int(bool(self.i2c_address & (1 << i)))] * 3
+		self.leds = led_data
+		self.leds2 = [
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+		]
 		self.set_leds(led_data)
 
 
@@ -405,6 +452,51 @@ class FretCollection(collections.OrderedDict):
 		return '\n'.join("0x%02x: %r" % item for item in self.items())
 	__repr__ = __str__
 
+class Touchpad(object):
+	def __init__(self, i2c, i2c_address = TOUCHPAD_I2C_ADDRESS):
+		self.i2c = i2c
+		self.i2c_address = i2c_address
+
+		#increase jumplimit
+		self.i2c.transfer(0x4b, [periphery.I2C.Message([0x36+30, 0x01, 0x0c*4])])
+
+	def read_packet_iter(self):
+		while True:
+			read_address_request = periphery.I2C.Message([0x11, 0x01])
+			rx_buf = periphery.I2C.Message([0]*8, read=True)
+			self.i2c.transfer(0x4b, [read_address_request, rx_buf])
+			packet = rx_buf.data
+
+			if packet[0]==0xff:
+				#skip empty message
+				continue
+
+			packet = {
+				"id": packet[0],
+
+				"status": packet[1],
+				"ungrip":  bool(packet[1] & (1<<0)),
+				"supress": bool(packet[1] & (1<<1)),
+				"amp":     bool(packet[1] & (1<<2)),
+				"vector":  bool(packet[1] & (1<<3)),
+				"move":    bool(packet[1] & (1<<4)),
+				"release": bool(packet[1] & (1<<5)),
+				"press":   bool(packet[1] & (1<<6)),
+				"detect":  bool(packet[1] & (1<<7)),
+
+				"x": (packet[2]<<8) + (packet[4] & 0xf0),
+				"y": (packet[3]<<8) + ((packet[4] & 0xf0)<<4),
+				"area": packet[5],
+				"amplitude": packet[6],
+				"vector1": (packet[7] & 0xf0) >> 4,
+				"vector2": (packet[7] & 0x0f),
+			}
+
+			packet["x"]//=16
+			packet["y"]//=16
+
+			yield packet
+
 def fps_test(collection):
 	fps = FPSCounter(len(collection)*10)
 
@@ -472,6 +564,9 @@ if __name__=="__main__":
 		(0x002f0033, 0x46335716, 0x20333539): (0x37, "fret 7"),
 		(0x002c0038, 0x46335716, 0x20333539): (0x38, "fret 8"),
 		(0x00400035, 0x46335717, 0x20333539): (0x39, "fret 9"),
+
+		(0x00380058, 0x46335717, 0x20333539): (0x50, "option 0"),
+		(0x003b0037, 0x46335717, 0x20333539): (0x51, "option 1"),
 	}
 	collection.enumerate(device_list)
 	if 0x20 in collection:
@@ -481,9 +576,23 @@ if __name__=="__main__":
 		#pass
 
 	for f in collection.values():
+		print(f.i2c_address)
+		#if f.version["Firmware copy"]!="RO":
+			#f.jump("RO")
+		#f.flash("/tmp/ec.RW.bin", offset=32768, size=32768)
 		if f.version["Firmware copy"]!="RW":
 			f.jump("RW")
-		#f.flash()
+		#f.flash("/tmp/ec.RO.flat", offset=0, size=32768)
 
-	#fps_test(collection)
-	rpyc_start(collection)
+	#iters = [f.i2c_led_demo(f, i * 10) for i, f in enumerate(collection.values())]
+	#for i in iters:
+		#next(i)
+	#while True:
+		#next(iters[0])
+	fps_test(collection)
+	#rpyc_start(collection)
+
+	#tp = Touchpad(i2c)
+	#for packet in tp.read_packet_iter():
+		#print(packet)
+
