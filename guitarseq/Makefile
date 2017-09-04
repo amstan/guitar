@@ -29,4 +29,4 @@ run: all
 
 .PHONY: runx
 runx: all
-	python3 QGuitarSeq.py
+	python3 -i QGuitarSeq.py

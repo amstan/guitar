@@ -41,13 +41,13 @@ int process(jack_nframes_t nframes, void *arg) {
 			break;
 		}
 
-		// skip the header now
-		jack_ringbuffer_read_advance(guitarseq->out_buffer, sizeof(meh));
-
 		// from the future?
 		if (meh.time >= now) {
 			break;
 		}
+
+		// skip the header now
+		jack_ringbuffer_read_advance(guitarseq->out_buffer, sizeof(meh));
 
 		// time it right
 		jack_nframes_t offset = meh.time - now + nframes - 1;
