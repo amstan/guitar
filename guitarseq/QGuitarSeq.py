@@ -78,8 +78,8 @@ import device
 class GuitarDevice(device.Device, QThread):
 	guitar_event = pyqtSignal(str)
 
-	def __init__(self):
-		device.Device.__init__(self)
+	def __init__(self, read_packet_iter):
+		device.Device.__init__(self, read_packet_iter)
 		QThread.__init__(self)
 
 	def run(self):
@@ -150,6 +150,9 @@ class LocalI2C(QThread):
 		(0x002f0033, 0x46335716, 0x20333539): (0x37, "fret 7"),
 		(0x002c0038, 0x46335716, 0x20333539): (0x38, "fret 8"),
 		(0x00400035, 0x46335717, 0x20333539): (0x39, "fret 9"),
+
+		(0x00380058, 0x46335717, 0x20333539): (0x50, "option 0"),
+		(0x003b0037, 0x46335717, 0x20333539): (0x51, "option 1"),
 	}
 
 	def __init__(self):
@@ -159,6 +162,7 @@ class LocalI2C(QThread):
 		self.i2c = fret_tester.periphery.I2C("/dev/i2c-5")
 		self.collection = fret_tester.FretCollection(self.i2c)
 		self.collection.enumerate(self.device_list)
+		self.touchpad = fret_tester.Touchpad(self.i2c)
 
 		for f in self.collection.values():
 			if f.version["Firmware copy"]!="RW":
@@ -178,10 +182,10 @@ class LocalI2C(QThread):
 		QThread.__init__(self)
 
 	def set_led(self, string_id, fret_id, r, g, b):
-		self.collection[0x30 + fret_id].leds[string_id] = [r//4, g//4, b//4]
+		self.collection[0x30 + fret_id].leds[string_id] = [r, g, b]
 
 	def set_led2(self, string_id, fret_id, r, g, b):
-		self.collection[0x30 + fret_id].leds2[string_id] = [r//4, g//4, b//4]
+		self.collection[0x30 + fret_id].leds2[string_id] = [r, g, b]
 
 	def run(self):
 		while True:
@@ -345,10 +349,6 @@ class QGuitarSeq(QMainWindow):
 		#self.emulator.guitar_event.connect(self.guitarseq.on_guitar_event)
 		#self.emulator.show()
 
-		#self.guitar_device = GuitarDevice()
-		#self.guitar_device.guitar_event.connect(self.guitarseq.on_guitar_event)
-		#self.guitar_device.start()
-
 		#self.rpi = RaspberryPiRpc()
 		#self.rpi.guitar_event.connect(self.guitarseq.on_guitar_event)
 		#self.rpi.start()
@@ -356,6 +356,10 @@ class QGuitarSeq(QMainWindow):
 		self.locali2c = LocalI2C()
 		self.locali2c.guitar_event.connect(self.guitarseq.on_guitar_event)
 		self.locali2c.start()
+
+		self.guitar_device = GuitarDevice(self.locali2c.touchpad.read_packet_iter)
+		self.guitar_device.guitar_event.connect(self.guitarseq.on_guitar_event)
+		self.guitar_device.start()
 
 	def scan_for_notes(self):
 		while 1:
