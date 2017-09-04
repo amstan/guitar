@@ -6,3 +6,6 @@
 	path = libopencm3
 	url = git@github.com:libopencm3/libopencm3.git
 	branch = master
+[submodule "firmware"]
+	path = firmware
+	url = https://chromium.googlesource.com/chromiumos/platform/ec
