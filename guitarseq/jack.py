@@ -1,1 +1,1 @@
-jackclient-python/jack.py
+../third_party/jackclient-python/jack.py

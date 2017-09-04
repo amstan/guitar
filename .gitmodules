@@ -1,5 +1,5 @@
 [submodule "guitarseq/jackclient-python"]
-	path = guitarseq/jackclient-python
+	path = third_party/jackclient-python
 	url = git@github.com:amstan/jackclient-python.git
 	branch = master
 [submodule "firmware/libopencm3"]
@@ -9,3 +9,6 @@
 [submodule "firmware"]
 	path = firmware
 	url = https://chromium.googlesource.com/chromiumos/platform/ec
+[submodule "guitarseq/python-periphery"]
+	path = third_party/python-periphery
+	url = https://github.com/vsergeev/python-periphery.git
