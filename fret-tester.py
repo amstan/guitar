@@ -485,7 +485,7 @@ class Touchpad(object):
 				"detect":  bool(packet[1] & (1<<7)),
 
 				"x": (packet[2]<<8) + (packet[4] & 0xf0),
-				"y": (packet[3]<<8) + ((packet[4] & 0xf0)<<4),
+				"y": (packet[3]<<8) + ((packet[4] & 0x0f)<<4),
 				"area": packet[5],
 				"amplitude": packet[6],
 				"vector1": (packet[7] & 0xf0) >> 4,
