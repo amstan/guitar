@@ -21,7 +21,7 @@
 
 /* I2C ports */
 const struct i2c_port_t i2c_ports[] = {
-	{"slave",  I2C_PORT_SLAVE, 100,
+	{"slave",  I2C_PORT_SLAVE, 1000,
 		GPIO_SLAVE_I2C_SCL, GPIO_SLAVE_I2C_SDA},
 };
 const unsigned int i2c_ports_used = ARRAY_SIZE(i2c_ports);
