@@ -77,15 +77,18 @@ class KeyboardEmulator(QWidget):
 import device
 class GuitarDevice(device.Device, QThread):
 	guitar_event = pyqtSignal(str)
+	device_event = pyqtSignal(dict)
 
 	def __init__(self, read_packet_iter):
 		device.Device.__init__(self, read_packet_iter)
 		QThread.__init__(self)
 
 	def run(self):
-		for event in self.process_strings():
-			self.guitar_event.emit("ps%d" % event["string_id"])
-			self.guitar_event.emit("rs%dv%03d" % (event["string_id"], event["velocity"]))
+		for i,event in self.process_strings():
+			if i==0:
+				self.device_event.emit(event)
+			else:
+				self.guitar_event.emit(event)
 
 class RaspberryPiRpc(QThread):
 	guitar_event = pyqtSignal(str)
@@ -200,7 +203,7 @@ class LocalI2C(QThread):
 					else:
 						spot = "s%1d" % (string_id)
 
-					rising_threshold = 130
+					rising_threshold = 160
 					falling_threshold = 130
 
 					if ((old_reading[string_id] < rising_threshold) and
@@ -303,6 +306,136 @@ class QFretPanel(QFrame):
 	def __getitem__(self, index):
 		return self.layout.itemAtPosition(self.strings - index[0], index[1] + 1).widget()
 
+class QGrapher(QWidget):
+
+	#Points per screen
+	xPoints = 8
+	yPoints = 1
+
+	fingers = {}
+
+	"""Plots some units against time."""
+	def __init__(self,units="uA",defaultheight=300,width=1,parent=None):
+		self.units=units
+		self.height=float(defaultheight)
+		self.width=float(width)
+
+		super(QGrapher,self).__init__(parent)
+
+		#Setup the layout
+		self._layout=QVBoxLayout()
+		self.setLayout(self._layout)
+
+		class _QGraphSurface(QWidget):
+			callback = lambda *args: None
+
+			def paintEvent(self,event):
+				return self.callback(self,event)
+		self._graph=_QGraphSurface()
+		self._graph.callback=lambda QGraphSurfaceInstance, event: self._graphPainter(QGraphSurfaceInstance, event)
+		self._graph.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+		self._layout.addWidget(self._graph)
+
+	def _graphPainter(self, QGraphSurfaceInstance, event):
+		"""The paintEvent method for self._graph."""
+
+		#Get painter object and make sure it's antialiased
+		painter=QPainter(QGraphSurfaceInstance)
+		painter.setRenderHint(QPainter.Antialiasing,True)
+		painter.setRenderHint(QPainter.HighQualityAntialiasing,True)
+
+		string_count = 6
+		max_x = 2040
+		interval = max_x / (string_count + 1)
+		string_locations = [int((i + 1) * interval) for i in range(string_count)]
+		string_locations.reverse()
+
+		#Draw Grid
+		painter.setPen(QColor(0,0,0,100))
+		for x in string_locations:
+			painter.drawLine(self.toQPoint(QPointF(x,0)),self.toQPoint(QPointF(x,self.height)))
+		for y in range(self.yPoints+1):
+			y*=self.height/self.yPoints
+			painter.drawLine(self.toQPoint(QPointF(0,y)),self.toQPoint(QPointF(self.width,y)))
+
+		#plot the points
+		for finger in self.fingers.values():
+			size=finger["amplitude"]*1.5
+			painter.setPen(QColor("blue"))
+			painter.drawEllipse(QPointF(self.toQPoint(finger["x"],finger["y"])),size,size)
+			painter.setPen(QColor("red"))
+			painter.drawEllipse(QPointF(self.toQPoint(finger["x"],finger["y"])),1,1)
+			#plot=QPainterPath()
+			#plot.moveTo()
+			#for time in times[1:]:
+				#plot.lineTo(QPointF(self.toQPoint(time,self.points[time])))
+			#painter.setPen(QColor("blue"))
+			#painter.drawPath(plot)
+
+		#axis
+		painter.setPen(QColor("black"))
+		painter.drawLine(self.toQPoint(0,0),self.toQPoint(self.width,0))
+		painter.drawLine(self.toQPoint(0,0),self.toQPoint(0,self.height))
+
+		#ticks on the axis
+		ticklength=3
+		painter.setPen(QColor("black"))
+		for x in string_locations:
+			painter.drawLine(self.toQPoint(x,0)+QPoint(0,ticklength),self.toQPoint(x,0)+QPoint(0,-ticklength))
+		for y in range(self.yPoints+1):
+			y*=self.height/self.yPoints
+			painter.drawLine(self.toQPoint(self.width,y)+QPoint(ticklength,0),self.toQPoint(self.width,y)+QPoint(-ticklength,0))
+
+		#labels on the axis
+		painter.setPen(QColor("black"))
+		for x in string_locations:
+			painter.drawText(self.toQPoint(x,0)+QPoint(-10,15),"%0.0f" % (x,))
+		for y in range(self.yPoints+1):
+			y*=self.height/self.yPoints
+			painter.drawText(self.toQPoint(self.width,y)+QPoint(-40,5),"%0.0f%s" % (y,self.units))
+
+	def sizeHint(self):
+		return QSize(1000,1000)
+
+	def toQPoint(self,*args):
+		"""Returns a a point on the screen given a point in the graph."""
+		point=QPointF(*args)
+
+		scale=QTransform()
+		scale.scale(self._graph.width()/self.width,self._graph.height()/self.height)
+		point*=scale
+
+		invert=QTransform()
+		invert.scale(-1,-1)
+		invert.translate((-self._graph.width()),(-self._graph.height()))
+		point*=invert
+
+		hmargin=50
+		vmargin=30
+		borders=QTransform()
+		borders.scale(1.0-(hmargin*2.0)/self._graph.width(),1.0-(vmargin*2.0)/self._graph.height())
+		borders.translate(hmargin,vmargin)
+		point*=borders
+
+		return QPoint(int(point.x()),int(point.y()))
+
+	def on_device_event(self,packet):
+		if packet["release"]:
+			try:
+				del self.fingers[packet["id"]]
+			except KeyError as e:
+				print(e)
+		else:
+			self.fingers[packet["id"]] = packet
+		self._graph.update()
+
+	#def recievePoints(self,newpoints):
+		#for time,value in newpoints:
+			#self.points[time]=value
+			#if value>self.height:
+				#self.height=float(value)
+
+
 class QGuitarSeq(QMainWindow):
 	def __init__(self, parent=None):
 		super().__init__(parent)
@@ -313,7 +446,7 @@ class QGuitarSeq(QMainWindow):
 		self.setCentralWidget(vsplitter)
 
 		tophsplitter=QSplitter(Qt.Horizontal,self)
-		vsplitter.addWidget(tophsplitter)
+		#vsplitter.addWidget(tophsplitter)
 
 		self.main_frets = QFretPanel(self.guitarseq.string_count, self.guitarseq.fret_count)
 		for fret in self.main_frets:
@@ -328,7 +461,6 @@ class QGuitarSeq(QMainWindow):
 		tophsplitter.addWidget(self.string_frets)
 
 		test=QGraphicsView()
-		test.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 		tophsplitter.addWidget(test)
 
 		self.option_frets = QFretPanel(self.guitarseq.string_count, 2)
@@ -336,8 +468,11 @@ class QGuitarSeq(QMainWindow):
 			fret.setText("Option " + fret.text())
 		tophsplitter.addWidget(self.option_frets)
 
-		vsplitter.addWidget(QGraphicsView())
-		vsplitter.addWidget(QLabel("hi"))
+		#vsplitter.addWidget(QGraphicsView())
+		#vsplitter.addWidget(QLabel("hi"))
+
+		self.grapher = QGrapher("",1360,2040)
+		vsplitter.addWidget(self.grapher)
 
 		self.setWindowTitle("QGuitarSeq")
 
@@ -359,6 +494,7 @@ class QGuitarSeq(QMainWindow):
 
 		self.guitar_device = GuitarDevice(self.locali2c.touchpad.read_packet_iter)
 		self.guitar_device.guitar_event.connect(self.guitarseq.on_guitar_event)
+		self.guitar_device.device_event.connect(self.grapher.on_device_event)
 		self.guitar_device.start()
 
 	def scan_for_notes(self):

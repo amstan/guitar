@@ -21,7 +21,8 @@ _ffi.cdef("""
 _libguitarseq = _ffi.dlopen(_libguitarseq_so_file)
 
 class GuitarSeq(object):
-	tuning = [notes.Note(name) for name in "E2 A2 D3 G3 B3 E4".split(" ")]
+	tuning = [notes.Note(name)+0 for name in "E2 A2 D3 G3 B3 E4".split(" ")]
+	#tuning = [notes.Note(name) for name in "D2 G2 C3 F3 A3 D4".split(" ")]
 	fret_count = 9
 	string_count = 6
 
