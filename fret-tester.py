@@ -185,13 +185,19 @@ class Fret(object):
 	def flash(self, filename = "/tmp/ec.RW.bin", offset=32768, size=32768):
 		old_i2c_address = self.i2c_address
 		self.i2c_address = STARTUP_I2C_ADDRESS
-		subprocess.call("sudo /home/alex/ec/build/bds/util/ectool --interface=i2c flasherase %s %s" % (offset, size), shell=True)
-		subprocess.call("sudo /home/alex/ec/build/bds/util/ectool --interface=i2c flashwrite %s %s" % (offset, filename), shell=True)
+		subprocess.call("sudo /home/alex/guitar/firmware/build/bds/util/ectool --interface=i2c flasherase %s %s" % (offset, size), shell=True)
+		subprocess.call("sudo /home/alex/guitar/firmware/build/bds/util/ectool --interface=i2c flashwrite %s %s" % (offset, filename), shell=True)
 		self.i2c_address = old_i2c_address
 
 	_touch_len = None
 	def get_touch(self):
-		reply = self.command(0x0034, [], expected_length=self._touch_len)
+		while True:
+			try:
+				reply = self.command(0x0034, [], expected_length=self._touch_len)
+			except Exception as e:
+				print(e)
+			else:
+				break
 		if self._touch_len is None:
 			self._touch_len = len(reply)
 
@@ -219,7 +225,13 @@ class Fret(object):
 		self.command(0x0028, [0,7, i, r,g,b], expected_length = 0)
 
 	def set_leds(self, data):
-		self.command(0x0027, data, expected_length = 0)
+		while True:
+			try:
+				self.command(0x0027, data, expected_length = 0)
+			except Exception as e:
+				print(e)
+			else:
+				break
 
 	_cur_touch = [0,0,0,0,0,0]
 	def i2c_led_demo(self, touch_source=None, offset=0):
@@ -263,7 +275,7 @@ class Fret(object):
 					grayscale = " .:-=+*#%@"
 					touch = list(touch_source.get_touch())
 
-					#print(touch)
+					print(touch)
 
 					#m = 0
 					#for i, t in reversed(list(enumerate(touch))):
@@ -577,12 +589,14 @@ if __name__=="__main__":
 
 	for f in collection.values():
 		print(f.i2c_address)
-		#if f.version["Firmware copy"]!="RO":
-			#f.jump("RO")
-		#f.flash("/tmp/ec.RW.bin", offset=32768, size=32768)
+		time.sleep(0.1)
+		if f.version["Firmware copy"]!="RO":
+		    f.jump("RO")
+		time.sleep(0.1)
+		#f.flash("/home/alex/guitar/firmware/build/fret/RW/ec.RW.bin", offset=32768, size=32768)
 		if f.version["Firmware copy"]!="RW":
-			f.jump("RW")
-		#f.flash("/tmp/ec.RO.flat", offset=0, size=32768)
+		    f.jump("RW")
+		#f.flash("/home/alex/guitar/firmware/build/fret/RW/ec.RO.flat", offset=0, size=32768)
 
 	#iters = [f.i2c_led_demo(f, i * 10) for i, f in enumerate(collection.values())]
 	#for i in iters:
